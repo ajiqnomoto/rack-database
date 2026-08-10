@@ -1,0 +1,21 @@
+{
+  "name": "OptiTrack DWDM Manager",
+  "short_name": "OptiTrack",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0a2540",
+  "theme_color": "#0a2540",
+  "description": "Layer 1 & 2 Infrastructure Management Dashboard",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2885/2885417.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2885/2885417.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

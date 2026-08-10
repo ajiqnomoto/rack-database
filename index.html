@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OptiTrack - Cloud Sync Database</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a2540">
+    
+    <!-- Google Fonts & Bootstrap -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- DataTables -->
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    
+    <style>
+        body { background-color: var(--bs-tertiary-bg); font-family: 'Inter', sans-serif; }
+        
+        .app-header {
+            background: linear-gradient(135deg, #0a2540 0%, #173f66 100%); color: white;
+            padding: 20px 20px; border-bottom: 4px solid #00d2ff; margin-bottom: 30px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        .main-container { 
+            background-color: var(--bs-body-bg); padding: 30px; border-radius: 12px; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05); margin-bottom: 50px; position: relative;
+        }
+        
+        .nav-tabs .nav-link { color: var(--bs-secondary-color); font-weight: 600; border: none; border-bottom: 3px solid transparent; padding: 12px 20px; }
+        .nav-tabs .nav-link.active { color: var(--bs-primary); border-bottom: 3px solid #00d2ff; background: transparent; }
+        .nav-tabs .nav-link:hover { border-bottom: 3px solid var(--bs-border-color); }
+        
+        /* Loading Overlay */
+        #loadingOverlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8); z-index: 999; border-radius: 12px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        [data-bs-theme="dark"] #loadingOverlay { background: rgba(33,37,41,0.8); }
+        
+        /* Vendor Colors */
+        .badge-vendor { padding: 6px 10px; border-radius: 6px; font-weight: 600; font-size: 0.85em; text-shadow: 0 1px 1px rgba(255,255,255,0.3); }
+        [data-bs-theme="dark"] .badge-vendor { text-shadow: 0 1px 1px rgba(0,0,0,0.8); }
+        .vendor-nokia { background-color: #3b71ca; color: white; }
+        .vendor-huawei { background-color: #dc4c64; color: white; }
+        .vendor-ciena { background-color: #e4a11b; color: #333; }
+        .vendor-infinera { background-color: #14a44d; color: white; }
+        .vendor-bti { background-color: #9fa6b2; color: #333; }
+        .vendor-juniper { background-color: #54b4d3; color: #333; }
+        .vendor-other { background-color: #fbfbfb; color: #333; border: 1px solid #ccc;}
+        [data-bs-theme="dark"] .vendor-other { background-color: #333; color: #fff; border: 1px solid #555;}
+        
+        .custom-filter-bar { background-color: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        [data-bs-theme="dark"] .form-control, [data-bs-theme="dark"] .form-select { background-color: var(--bs-dark-bg-subtle); color: var(--bs-body-color); }
+        
+        /* PWA Install Button */
+        #installAppBtn { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <div>
+            <h2 class="fw-bold mb-1">OptiTrack (Cloud Sync)</h2>
+            <p class="mb-0 text-light opacity-75">Live Google Sheets Backend</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <button id="installAppBtn" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">📲 Install App</button>
+            <span id="syncStatus" class="badge bg-secondary d-flex align-items-center me-3 px-3 fs-6">⏳ Initializing...</span>
+            <button id="darkModeToggle" class="btn btn-outline-light rounded-pill px-4">🌙 Dark Mode</button>
+        </div>
+    </div>
+
+    <div class="container-fluid px-4 w-100">
+        <div class="main-container">
+            
+            <div id="loadingOverlay">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+                <h5 class="mt-3 text-secondary fw-bold" id="loadingText">Syncing with Google Sheets...</h5>
+            </div>
+
+            <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button">📊 Inventory Dashboard</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="entry-tab" data-bs-toggle="tab" data-bs-target="#entry" type="button">➕ Add Equipment</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="myTabContent">
+                <!-- TAB 1: Dashboard -->
+                <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                    
+                    <div class="custom-filter-bar d-flex flex-wrap align-items-center gap-3">
+                        <span class="fw-bold text-secondary me-2">Quick Filters:</span>
+                        <div style="min-width: 180px;">
+                            <select id="filterSite" class="form-select form-select-sm shadow-sm">
+                                <option value="">All Sites</option>
+                                <option value="AIMS CYBERJAYA">AIMS CYBERJAYA</option>
+                                <option value="CX2">CX2</option>
+                                <option value="CSF">CSF</option>
+                                <option value="NTT">NTT</option>
+                                <option value="KVDC">KVDC</option>
+                                <option value="AIMS KL">AIMS KL</option>
+                                <option value="CX5">CX5</option>
+                                <option value="IPDC">IPDC</option>
+                                <option value="ANSAR">ANSAR</option>
+                                <option value="NCC KL">NCC KL</option>
+                            </select>
+                        </div>
+                        <div style="min-width: 180px;">
+                            <select id="filterVendor" class="form-select form-select-sm shadow-sm">
+                                <option value="">All Vendors</option>
+                                <option value="Nokia">Nokia</option>
+                                <option value="Huawei">Huawei</option>
+                                <option value="Ciena">Ciena</option>
+                                <option value="Infinera">Infinera</option>
+                                <option value="BTI">BTI</option>
+                                <option value="Juniper">Juniper</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-flex gap-2 ms-auto">
+                            <!-- LIVE SHEET URL -->
+                            <a href="https://docs.google.com/spreadsheets/d/1XAip3cPjmOHmR4tJBLJOKZoskaC87LWNgsh1IcC_Sd0/edit?usp=sharing" target="_blank" class="btn btn-sm btn-outline-primary shadow-sm">📑 View Master Sheet</a>
+                            <button class="btn btn-sm btn-primary shadow-sm" onclick="fetchDataFromSheet(false)">🔄 Refresh Data</button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="dwdmTable" class="table table-hover table-bordered align-middle" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Site Name</th>
+                                    <th>Floor / Room</th>
+                                    <th>Rack ID</th>
+                                    <th>Rack Size</th>
+                                    <th>U-Position</th>
+                                    <th>Vendor</th>
+                                    <th>Model</th>
+                                    <th>Power Source</th>
+                                    <th>Notes / Serial</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Data Entry -->
+                <div class="tab-pane fade" id="entry" role="tabpanel">
+                    <form id="dwdmForm" class="row g-4 p-2">
+                        <h5 class="text-primary border-bottom pb-2 mb-3">Location Details</h5>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Site Name</label>
+                            <select class="form-select" id="siteName" required>
+                                <option value="" disabled selected>Select Site...</option>
+                                <option value="AIMS CYBERJAYA">AIMS CYBERJAYA</option>
+                                <option value="CX2">CX2</option>
+                                <option value="CSF">CSF</option>
+                                <option value="NTT">NTT</option>
+                                <option value="KVDC">KVDC</option>
+                                <option value="AIMS KL">AIMS KL</option>
+                                <option value="CX5">CX5</option>
+                                <option value="IPDC">IPDC</option>
+                                <option value="ANSAR">ANSAR</option>
+                                <option value="NCC KL">NCC KL</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Floor / Room</label>
+                            <input type="text" class="form-control" id="room" placeholder="e.g., Fl 2 / MMR" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Power Source (DC Scope)</label>
+                            <select class="form-select" id="powerSource" required>
+                                <option value="" disabled selected>Select AC or DC...</option>
+                                <option value="AC Power">AC Power</option>
+                                <option value="DC Power">DC Power</option>
+                            </select>
+                            <small id="powerHelp" class="form-text text-muted">Auto-fills if Site is known.</small>
+                        </div>
+                        
+                        <h5 class="text-primary border-bottom pb-2 mt-5 mb-3">Rack & Space</h5>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Rack ID</label>
+                            <input type="text" class="form-control" id="rackId" placeholder="e.g., R-12" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Rack Size</label>
+                            <select class="form-select" id="rackSize" required>
+                                <option value="" disabled selected>Select size...</option>
+                                <option value="19 inch">19 inch</option>
+                                <option value="21 inch">21 inch</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">U-Position</label>
+                            <input type="text" class="form-control" id="uPosition" placeholder="e.g., U10-U12" required>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mt-5 mb-3">Hardware Profile</h5>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Vendor</label>
+                            <select class="form-select" id="vendor" required>
+                                <option value="" disabled selected>Select Vendor...</option>
+                                <option value="Nokia">Nokia</option>
+                                <option value="Huawei">Huawei</option>
+                                <option value="Ciena">Ciena</option>
+                                <option value="Infinera">Infinera</option>
+                                <option value="BTI">BTI</option>
+                                <option value="Juniper">Juniper</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Model</label>
+                            <select class="form-select" id="model" required>
+                                <option value="" disabled selected>Select Vendor first...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Notes / Serial (Optional)</label>
+                            <input type="text" class="form-control" id="notes" placeholder="e.g., SN: NK938475">
+                        </div>
+
+                        <div class="col-12 mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm px-5" id="submitBtn">💾 Sync to Google Sheets</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        // PWA Setup
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js');
+            });
+        }
+        let deferredPrompt;
+        const installBtn = document.getElementById('installAppBtn');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') { installBtn.style.display = 'none'; }
+                deferredPrompt = null;
+            }
+        });
+
+        // GOOGLE SHEETS API
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzeYS6m9z-H1Uy52BzjLAIRhOjXD7A4F9GXn-dhq7o8rngQKmEtW4QSYtd82Sj2uOWJ2A/exec"; 
+        
+        let localCacheData = [];
+        let dataTable;
+
+        // UI Loading Controls
+        function showLoading(msg) {
+            document.getElementById('loadingText').innerText = msg;
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+        function updateSyncStatus(status, color) {
+            const badge = document.getElementById('syncStatus');
+            badge.className = `badge bg-${color} d-flex align-items-center me-3 px-3 fs-6 shadow-sm`;
+            badge.innerHTML = status;
+        }
+
+        // --- Fetch Data (Now supports Silent mode) ---
+        async function fetchDataFromSheet(isSilent = false) {
+            if (!isSilent) showLoading("Pulling latest data from Google Sheets...");
+            updateSyncStatus('🔄 Syncing...', 'warning');
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                
+                localCacheData = data;
+                dataTable.clear();
+                dataTable.rows.add(data).draw(false); 
+                
+                if (!isSilent) hideLoading();
+                updateSyncStatus('🟢 Cloud Synced', 'success');
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                if (!isSilent) {
+                    alert("Network error: Could not load data from Google Sheets.");
+                    hideLoading();
+                }
+                updateSyncStatus('🔴 Disconnected', 'danger');
+            }
+        }
+
+        const hardwareModels = {
+            'Nokia': ['PSS-8', 'PSS-16', 'PSS-32'], 'Huawei': ['M12', 'OSN 9800'],
+            'Ciena': ['6500', 'Waveserver Ai', 'Z-Series'], 'Infinera': ['Groove G30', 'XTC', 'DTN-X'],
+            'BTI': ['7814', '704', 'PVX'], 'Juniper': ['Access', 'Aggregation'], 'Others': ['N/A or Custom']
+        };
+
+        $(document).ready(function() {
+            
+            dataTable = $('#dwdmTable').DataTable({
+                data: [],
+                pageLength: 25,
+                dom: '<"row mb-3"<"col-sm-12 col-md-6"><"col-sm-12 col-md-6 text-end"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                createdRow: function(row, data, dataIndex) {
+                    let vendor = data[5]; let badgeClass = 'badge-vendor vendor-other';
+                    if(vendor === 'Nokia') badgeClass = 'badge-vendor vendor-nokia';
+                    if(vendor === 'Huawei') badgeClass = 'badge-vendor vendor-huawei';
+                    if(vendor === 'Ciena') badgeClass = 'badge-vendor vendor-ciena';
+                    if(vendor === 'Infinera') badgeClass = 'badge-vendor vendor-infinera';
+                    if(vendor === 'BTI') badgeClass = 'badge-vendor vendor-bti';
+                    if(vendor === 'Juniper') badgeClass = 'badge-vendor vendor-juniper';
+                    $('td:eq(5)', row).html(`<span class="${badgeClass}">${vendor}</span>`);
+                }
+            });
+
+            // Initial load
+            fetchDataFromSheet(false);
+
+            // Auto-refresh every 5 minutes
+            setInterval(() => {
+                fetchDataFromSheet(true);
+            }, 300000);
+
+            // UI Listeners
+            $('#filterSite').on('change', function() { dataTable.column(0).search(this.value).draw(); });
+            $('#filterVendor').on('change', function() { dataTable.column(5).search(this.value).draw(); });
+            $('#rackId').on('input', function() { $(this).val($(this).val().toUpperCase()); });
+
+            $('#vendor').on('change', function() {
+                const selectedVendor = $(this).val(); const $modelSelect = $('#model');
+                $modelSelect.empty(); 
+                $modelSelect.append(new Option("Select Model...", "", true, true));
+                $modelSelect.find('option:first').prop('disabled', true);
+                if(hardwareModels[selectedVendor]) {
+                    hardwareModels[selectedVendor].forEach(model => { $modelSelect.append(new Option(model, model)); });
+                } else { $modelSelect.append(new Option("N/A", "N/A")); }
+            });
+
+            $('#siteName').on('change', function() {
+                let siteInput = $(this).val();
+                let matchingSite = localCacheData.find(row => row[0] === siteInput);
+                if(matchingSite) {
+                    $('#powerSource').val(matchingSite[7]);
+                    $('#powerHelp').html(`🔒 Auto-filled <b>${matchingSite[7]}</b> from cloud history.`).removeClass('text-muted').addClass('text-success');
+                }
+            });
+
+            // Save Logic
+            $('#dwdmForm').on('submit', async function(e) {
+                e.preventDefault();
+                
+                const newRow = [
+                    $('#siteName').val(), $('#room').val(), $('#rackId').val(), $('#rackSize').val(),
+                    $('#uPosition').val(), $('#vendor').val(), $('#model').val(), $('#powerSource').val(), $('#notes').val()
+                ];
+
+                if (localCacheData.some(row => row[0] === newRow[0] && row[2] === newRow[2] && row[4] === newRow[4])) {
+                    alert(`🚨 CONFLICT:\nEquipment already exists at:\nSite: ${newRow[0]}\nRack: ${newRow[2]}\nU-Pos: ${newRow[4]}`);
+                    return false; 
+                }
+
+                showLoading("Saving to Google Sheets...");
+                updateSyncStatus('🔄 Syncing...', 'warning');
+
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'add', row: newRow }),
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                    });
+
+                    dataTable.row.add(newRow).draw(false);
+                    localCacheData.push(newRow);
+                    this.reset();
+                    $('#model').empty().append(new Option("Select Vendor first...", ""));
+                    hideLoading();
+                    updateSyncStatus('🟢 Cloud Synced', 'success');
+                    new bootstrap.Tab(document.querySelector('#dashboard-tab')).show();
+                    
+                } catch (error) {
+                    alert("Failed to sync to cloud. Are you offline?");
+                    hideLoading();
+                    updateSyncStatus('🔴 Sync Failed', 'danger');
+                }
+            });
+        });
+        
+        // Dark Mode Setup
+        const toggleBtn = document.getElementById('darkModeToggle');
+        const htmlElement = document.documentElement;
+        if (localStorage.getItem('theme') === 'dark') { htmlElement.setAttribute('data-bs-theme', 'dark'); toggleBtn.innerHTML = '☀️ Light Mode'; }
+        toggleBtn.addEventListener('click', () => {
+            if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+                htmlElement.setAttribute('data-bs-theme', 'light'); localStorage.setItem('theme', 'light'); toggleBtn.innerHTML = '🌙 Dark Mode';
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'dark'); localStorage.setItem('theme', 'dark'); toggleBtn.innerHTML = '☀️ Light Mode';
+            }
+        });
+    </script>
+</body>
+</html>
