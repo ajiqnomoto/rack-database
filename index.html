@@ -83,7 +83,6 @@
         .form-control, .form-select { border-radius: 8px; padding: 10px 15px; border: 1px solid var(--bs-border-color); }
         .form-control:focus, .form-select:focus { box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.25); border-color: #00d2ff; }
         
-        /* PWA Install Button */
         #installAppBtn { display: none; }
         
         /* --- RACK VISUALIZER 2.0 CSS --- */
@@ -92,34 +91,25 @@
         .vis-canvas-area { flex: 2; display: flex; justify-content: center; min-width: 350px; }
         
         .rack-cabinet { 
-            width: 340px; height: 840px; /* 42U * 20px */
+            width: 340px; height: 840px; 
             background-color: #1a1a1a; border: 12px solid #2d3436; border-radius: 8px;
             position: relative; box-shadow: inset 0 0 20px #000, 10px 10px 30px rgba(0,0,0,0.3);
             display: flex; justify-content: center;
         }
-        /* Side Rails */
         .rack-rail {
             width: 20px; height: 100%; background: #34495e;
             position: absolute; top: 0; z-index: 2; border-left: 1px solid #4a5c6e; border-right: 1px solid #2c3e50;
-            background-image: radial-gradient(#111 2px, transparent 3px); background-size: 100% 20px; /* Mounting holes */
+            background-image: radial-gradient(#111 2px, transparent 3px); background-size: 100% 20px;
         }
         .rack-rail.left { left: 0; }
         .rack-rail.right { right: 0; }
-        
-        /* The area where equipment is mounted */
         .rack-mount-space { width: 276px; height: 100%; position: relative; z-index: 5; }
-        
-        /* Background Grid */
         .rack-grid-u {
             width: 100%; height: 20px; position: absolute; box-sizing: border-box;
             border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between;
         }
         .rack-grid-u:nth-child(even) { background-color: rgba(255,255,255,0.02); }
-        
-        /* U-Numbers */
         .rack-label-u { color: #636e72; font-size: 10px; font-weight: 700; width: 20px; text-align: center; }
-        
-        /* Equipment Blocks */
         .rack-equipment {
             position: absolute; width: 100%; left: 0; box-sizing: border-box;
             border: 2px solid rgba(0,0,0,0.6); border-radius: 2px;
@@ -129,9 +119,10 @@
             transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
         .rack-equipment:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(0, 210, 255, 0.6); z-index: 10; }
-        
-        /* Tooltip styling override */
         .tooltip-inner { text-align: left; max-width: 250px; padding: 10px; border-radius: 8px; }
+        
+        /* Edit Button Styling */
+        .btn-edit { border-radius: 6px; padding: 4px 10px; }
     </style>
 </head>
 <body>
@@ -159,7 +150,6 @@
                 <h5 class="mt-3 text-secondary fw-bold" id="loadingText">Syncing with Cloud Database...</h5>
             </div>
 
-            <!-- Modern Pill Navigation -->
             <ul class="nav nav-pills" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button"><i class="bi bi-table me-2"></i>Inventory Dashboard</button>
@@ -225,6 +215,7 @@
                                     <th>Model</th>
                                     <th>Power Source</th>
                                     <th>Notes / Serial</th>
+                                    <th>Actions</th> <!-- NEW ACTIONS COLUMN -->
                                 </tr>
                             </thead>
                             <tbody id="tableBody"></tbody>
@@ -236,7 +227,6 @@
                 <div class="tab-pane fade" id="entry" role="tabpanel">
                     <form id="dwdmForm" class="p-2">
                         <div class="row g-4">
-                            
                             <!-- Location Card -->
                             <div class="col-lg-4">
                                 <div class="form-card">
@@ -280,12 +270,11 @@
                                             <option value="AC Power">AC Power</option>
                                             <option value="DC Power">DC Power</option>
                                         </select>
-                                        <div id="powerHelp" class="form-text mt-1 text-muted small">Auto-fills if Site is known.</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Rack & Space Card -->
+                            <!-- Rack Space Card -->
                             <div class="col-lg-4">
                                 <div class="form-card">
                                     <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-usb-drive-fill me-2"></i>Rack Space</h5>
@@ -304,7 +293,6 @@
                                     <div>
                                         <label class="form-label fw-bold small">U-Position</label>
                                         <input type="text" class="form-control" id="uPosition" placeholder="e.g., U10-U12" required>
-                                        <div class="form-text mt-1 text-muted small">Use format 'U1' or 'U10-U15'</div>
                                     </div>
                                 </div>
                             </div>
@@ -333,7 +321,7 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="form-label fw-bold small">Notes / Serial (Optional)</label>
+                                        <label class="form-label fw-bold small">Notes / Serial</label>
                                         <input type="text" class="form-control" id="notes" placeholder="e.g., SN: NK938475">
                                     </div>
                                 </div>
@@ -349,7 +337,6 @@
                 <!-- TAB 3: Rack Visualizer Split View -->
                 <div class="tab-pane fade" id="visualizer" role="tabpanel">
                     <div class="visualizer-container">
-                        
                         <!-- Control & Stats Panel -->
                         <div class="vis-controls">
                             <div class="card shadow-sm border-0 mb-4">
@@ -375,12 +362,9 @@
                                     <h6 class="fw-bold text-muted text-uppercase mb-3">Rack Utilization</h6>
                                     <div class="display-4 fw-bold text-primary mb-0" id="statUtilized">0U</div>
                                     <div class="text-muted small">Occupied Space</div>
-                                    
                                     <hr class="my-3">
-                                    
                                     <div class="display-6 fw-bold text-success mb-0" id="statFree">42U</div>
                                     <div class="text-muted small">Free Space</div>
-                                    
                                     <div class="progress mt-4" style="height: 10px;">
                                         <div id="utilizationBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
                                     </div>
@@ -394,22 +378,104 @@
                                 <i class="bi bi-server" style="font-size: 4rem; opacity: 0.2;"></i>
                                 <p class="mt-3 fw-medium">Select a Site and Rack ID to view elevation.</p>
                             </div>
-                            
-                            <!-- The Cabinet -->
                             <div class="rack-cabinet" id="rackCanvas" style="display: none;">
                                 <div class="rack-rail left"></div>
-                                <div class="rack-mount-space" id="rackMountSpace">
-                                    <!-- Equipment and Grid goes here -->
-                                </div>
+                                <div class="rack-mount-space" id="rackMountSpace"></div>
                                 <div class="rack-rail right"></div>
                             </div>
                         </div>
-                        
                     </div>
                 </div>
 
             </div>
         </div>
+    </div>
+
+    <!-- BOOTSTRAP EDIT MODAL -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title fw-bold" id="editModalLabel"><i class="bi bi-pencil-square me-2"></i>Edit Equipment</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <form id="editForm">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">Site Name</label>
+                        <select class="form-select bg-light" id="editSiteName" required>
+                            <!-- Same options as add form -->
+                            <option value="AIMS CYBERJAYA">AIMS CYBERJAYA</option>
+                            <option value="CX2">CX2</option>
+                            <option value="CSF">CSF</option>
+                            <option value="NTT">NTT</option>
+                            <option value="KVDC">KVDC</option>
+                            <option value="AIMS KL">AIMS KL</option>
+                            <option value="CX5">CX5</option>
+                            <option value="IPDC">IPDC</option>
+                            <option value="ANSAR">ANSAR</option>
+                            <option value="NCC KL">NCC KL</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">Room</label>
+                        <select class="form-select bg-light" id="editRoom" required>
+                            <option value="MMR 1">MMR 1</option><option value="MMR 2">MMR 2</option>
+                            <option value="Telco Room 1">Telco Room 1</option><option value="Telco Room 2">Telco Room 2</option>
+                            <option value="Data Hall 1">Data Hall 1</option><option value="Data Hall 2">Data Hall 2</option>
+                            <option value="Basement">Basement</option><option value="Roof / ODF">Roof / ODF</option>
+                            <option value="Staging Area">Staging Area</option><option value="Other">Other...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">Power Source</label>
+                        <select class="form-select bg-light" id="editPowerSource" required>
+                            <option value="AC Power">AC Power</option>
+                            <option value="DC Power">DC Power</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">Rack ID</label>
+                        <input type="text" class="form-control" id="editRackId" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">Rack Size</label>
+                        <select class="form-select" id="editRackSize" required>
+                            <option value="19 inch">19 inch (EIA)</option>
+                            <option value="21 inch">21 inch (ETSI)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">U-Position</label>
+                        <input type="text" class="form-control" id="editUPosition" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">Vendor</label>
+                        <select class="form-select" id="editVendor" required>
+                            <option value="Nokia">Nokia</option><option value="Huawei">Huawei</option>
+                            <option value="Ciena">Ciena</option><option value="Infinera">Infinera</option>
+                            <option value="BTI">BTI</option><option value="Juniper">Juniper</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">Model</label>
+                        <select class="form-select" id="editModel" required></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">Notes / Serial</label>
+                        <input type="text" class="form-control" id="editNotes">
+                    </div>
+                </div>
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save-fill me-2"></i>Save Changes</button>
+                </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Scripts -->
@@ -419,12 +485,16 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
     <script>
+        // ==========================================
+        // 🚀 LIVE GOOGLE SHEETS API KEY
+        // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzeYS6m9z-H1Uy52BzjLAIRhOjXD7A4F9GXn-dhq7o8rngQKmEtW4QSYtd82Sj2uOWJ2A/exec"; 
         
         let localCacheData = [];
         let dataTable;
+        let editingDtRow; // Keeps track of which UI row we are editing
+        let oldRowData;   // Keeps track of the original data to find it in the DB
 
-        // UI Loading
         function showLoading(msg) { document.getElementById('loadingText').innerText = msg; document.getElementById('loadingOverlay').style.display = 'flex'; }
         function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
         function updateSyncStatus(status, color, icon) {
@@ -433,7 +503,6 @@
             badge.innerHTML = `<i class="bi ${icon} me-2"></i> ${status}`;
         }
 
-        // Fetch Data
         async function fetchDataFromSheet(isSilent = false) {
             if (!isSilent) showLoading("Syncing latest data...");
             updateSyncStatus('Syncing...', 'warning', 'bi-arrow-repeat');
@@ -446,7 +515,6 @@
                 dataTable.rows.add(data).draw(false); 
                 populateVisualizerSites(); 
                 
-                // If visualizer is active, redraw the rack to catch updates
                 if($('#visRackSelect').val()) generateRack();
 
                 if (!isSilent) hideLoading();
@@ -464,10 +532,20 @@
         };
 
         $(document).ready(function() {
-            // Initialize DataTable
             dataTable = $('#dwdmTable').DataTable({
                 data: [], pageLength: 25,
                 dom: '<"row mb-3"<"col-sm-12 col-md-6"><"col-sm-12 col-md-6 text-end"f>>rt<"row mt-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                columns: [
+                    { title: "Site Name" }, { title: "Floor / Room" }, { title: "Rack ID" },
+                    { title: "Rack Size" }, { title: "U-Position" }, { title: "Vendor" },
+                    { title: "Model" }, { title: "Power Source" }, { title: "Notes / Serial" },
+                    { 
+                        title: "Actions", 
+                        orderable: false, 
+                        // Inject Edit button at the end of the row
+                        defaultContent: '<button class="btn btn-outline-primary btn-edit shadow-sm" title="Edit Entry"><i class="bi bi-pencil-square"></i></button>' 
+                    }
+                ],
                 createdRow: function(row, data) {
                     let vendor = data[5]; let badgeClass = 'badge-vendor vendor-other';
                     if(vendor === 'Nokia') badgeClass = 'badge-vendor vendor-nokia';
@@ -483,19 +561,21 @@
             fetchDataFromSheet(false);
             setInterval(() => { fetchDataFromSheet(true); }, 300000);
 
-            // Table Filters
             $('#filterSite').on('change', function() { dataTable.column(0).search(this.value).draw(); });
             $('#filterVendor').on('change', function() { dataTable.column(5).search(this.value).draw(); });
-            $('#rackId').on('input', function() { $(this).val($(this).val().toUpperCase()); });
+            $('#rackId, #editRackId').on('input', function() { $(this).val($(this).val().toUpperCase()); });
 
-            // Form Logic
-            $('#vendor').on('change', function() {
-                const selectedVendor = $(this).val(); const $modelSelect = $('#model');
-                $modelSelect.empty().append(new Option("Select Model...", "", true, true)).find('option:first').prop('disabled', true);
-                if(hardwareModels[selectedVendor]) {
-                    hardwareModels[selectedVendor].forEach(model => { $modelSelect.append(new Option(model, model)); });
-                } else { $modelSelect.append(new Option("N/A", "N/A")); }
-            });
+            // Populates dynamic model dropdown
+            function handleVendorChange(vendorVal, $modelDropdown, defaultModel = "") {
+                $modelDropdown.empty().append(new Option("Select Model...", "", true, true)).find('option:first').prop('disabled', true);
+                if(hardwareModels[vendorVal]) {
+                    hardwareModels[vendorVal].forEach(model => { $modelDropdown.append(new Option(model, model)); });
+                } else { $modelDropdown.append(new Option("N/A", "N/A")); }
+                if(defaultModel) $modelDropdown.val(defaultModel);
+            }
+
+            $('#vendor').on('change', function() { handleVendorChange($(this).val(), $('#model')); });
+            $('#editVendor').on('change', function() { handleVendorChange($(this).val(), $('#editModel')); });
 
             $('#siteName').on('change', function() {
                 let matchingSite = localCacheData.find(row => row[0] === $(this).val());
@@ -505,7 +585,80 @@
                 }
             });
 
-            // Form Submit
+            // --------------------------------------------------
+            // 📝 EDIT LOGIC 
+            // --------------------------------------------------
+            
+            // 1. Click "Edit" Button in Table
+            $('#dwdmTable tbody').on('click', '.btn-edit', function () {
+                editingDtRow = dataTable.row($(this).parents('tr'));
+                oldRowData = editingDtRow.data();
+
+                // Populate Modal fields with existing data
+                $('#editSiteName').val(oldRowData[0]);
+                $('#editRoom').val(oldRowData[1]);
+                $('#editRackId').val(oldRowData[2]);
+                $('#editRackSize').val(oldRowData[3]);
+                $('#editUPosition').val(oldRowData[4]);
+                $('#editPowerSource').val(oldRowData[7]);
+                $('#editNotes').val(oldRowData[8] || "");
+
+                // Handle dynamic dropdowns
+                $('#editVendor').val(oldRowData[5]);
+                handleVendorChange(oldRowData[5], $('#editModel'), oldRowData[6]);
+
+                // Show Modal
+                var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+                editModal.show();
+            });
+
+            // 2. Submit "Edit" Form
+            $('#editForm').on('submit', async function(e) {
+                e.preventDefault();
+                
+                const newRow = [
+                    $('#editSiteName').val(), $('#editRoom').val(), $('#editRackId').val(), $('#editRackSize').val(),
+                    $('#editUPosition').val(), $('#editVendor').val(), $('#editModel').val(), $('#editPowerSource').val(), $('#editNotes').val()
+                ];
+
+                // Check for conflict (Make sure we don't conflict with a DIFFERENT row)
+                let isLocationChanged = (oldRowData[0] !== newRow[0] || oldRowData[2] !== newRow[2] || oldRowData[4] !== newRow[4]);
+                if (isLocationChanged) {
+                    if (localCacheData.some(row => row[0] === newRow[0] && row[2] === newRow[2] && row[4] === newRow[4])) {
+                        alert(`🚨 CONFLICT:\nEquipment already exists at:\nSite: ${newRow[0]}\nRack: ${newRow[2]}\nU-Pos: ${newRow[4]}`); return; 
+                    }
+                }
+
+                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                showLoading("Updating Database...");
+                updateSyncStatus('Syncing...', 'warning', 'bi-arrow-repeat');
+
+                try {
+                    await fetch(SCRIPT_URL, { 
+                        method: 'POST', 
+                        body: JSON.stringify({ action: 'edit', oldRow: oldRowData, newRow: newRow }), 
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
+                    });
+
+                    // Update UI internally to avoid a full fetch
+                    editingDtRow.data(newRow).draw(false); 
+                    
+                    // Update Local Cache Memory
+                    const indexToUpdate = localCacheData.findIndex(row => row[0] === oldRowData[0] && row[2] === oldRowData[2] && row[4] === oldRowData[4]);
+                    if (indexToUpdate !== -1) localCacheData[indexToUpdate] = newRow;
+
+                    populateVisualizerSites();
+                    if($('#visRackSelect').val() === oldRowData[2]) generateRack();
+
+                    hideLoading(); updateSyncStatus('Cloud Synced', 'success', 'bi-cloud-check-fill');
+                } catch (error) {
+                    alert("Edit failed. Check connection."); hideLoading(); updateSyncStatus('Sync Failed', 'danger', 'bi-x-circle');
+                }
+            });
+
+            // --------------------------------------------------
+            // ➕ ADD LOGIC 
+            // --------------------------------------------------
             $('#dwdmForm').on('submit', async function(e) {
                 e.preventDefault();
                 const newRow = [
@@ -536,7 +689,6 @@
         // ----------------------------------------------------
         // RACK VISUALIZER 2.0 LOGIC
         // ----------------------------------------------------
-        
         function populateVisualizerSites() {
             const siteSelect = document.getElementById('visSiteSelect');
             const currentSelection = siteSelect.value;
@@ -561,7 +713,6 @@
             rackSelect.disabled = false;
         });
 
-        // Auto-Draw when Rack ID is selected
         $('#visRackSelect').on('change', function() { generateRack(); });
 
         function parseUPosition(uString) {
@@ -576,33 +727,26 @@
             const site = document.getElementById('visSiteSelect').value;
             const rack = document.getElementById('visRackSelect').value;
             const mountSpace = document.getElementById('rackMountSpace');
-            
             if (!site || !rack) return;
 
-            // UI Swaps
             document.getElementById('placeholderRack').style.display = 'none';
             document.getElementById('rackCanvas').style.display = 'flex';
             document.getElementById('rackStatsCard').style.display = 'block';
 
-            // Dispose old tooltips to prevent memory leaks
             $('[data-bs-toggle="tooltip"]').tooltip('dispose');
-            mountSpace.innerHTML = ''; // Clear canvas
+            mountSpace.innerHTML = ''; 
             
             const TOTAL_U = 42; const PIXELS_PER_U = 20;
             let utilizedUSpace = 0;
 
-            // 1. Draw Background Grids & Labels
             for (let i = 1; i <= TOTAL_U; i++) {
                 let uRow = document.createElement('div');
                 uRow.className = 'rack-grid-u';
                 uRow.style.bottom = ((i - 1) * PIXELS_PER_U) + 'px';
-                
-                // Numbers on both sides
                 uRow.innerHTML = `<div class="rack-label-u">${i}</div><div class="rack-label-u">${i}</div>`;
                 mountSpace.appendChild(uRow);
             }
 
-            // 2. Filter & Draw Equipment
             const rackEquipment = localCacheData.filter(row => row[0] === site && row[2] === rack);
             
             rackEquipment.forEach(item => {
@@ -627,7 +771,6 @@
                     block.innerHTML = `<span>${vendor}</span><span style="font-size:9px; font-weight:normal">${model}</span>`;
                 }
 
-                // Native Bootstrap Tooltip configuration
                 let tooltipHTML = `<div class='text-start'>
                     <strong>Vendor:</strong> ${vendor}<br>
                     <strong>Model:</strong> ${model}<br>
@@ -644,10 +787,8 @@
                 mountSpace.appendChild(block);
             });
 
-            // Initialize new tooltips
             $('[data-bs-toggle="tooltip"]').tooltip();
 
-            // Update Stats Card
             document.getElementById('statUtilized').innerText = `${utilizedUSpace}U`;
             document.getElementById('statFree').innerText = `${TOTAL_U - utilizedUSpace}U`;
             document.getElementById('utilizationBar').style.width = `${(utilizedUSpace / TOTAL_U) * 100}%`;
@@ -672,16 +813,9 @@
         });
         
         // PWA Setup
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
-        }
-        let deferredPrompt;
-        const installBtn = document.getElementById('installAppBtn');
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.style.display = 'block';
-        });
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+        let deferredPrompt; const installBtn = document.getElementById('installAppBtn');
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'block'; });
         installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
