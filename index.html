@@ -259,7 +259,19 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label fw-bold small">Floor / Room</label>
-                                        <input type="text" class="form-control" id="room" placeholder="e.g., Fl 2 / MMR" required>
+                                        <select class="form-select" id="room" required>
+                                            <option value="" disabled selected>Select Room...</option>
+                                            <option value="MMR 1">MMR 1 (Meet Me Room)</option>
+                                            <option value="MMR 2">MMR 2</option>
+                                            <option value="Telco Room 1">Telco Room 1</option>
+                                            <option value="Telco Room 2">Telco Room 2</option>
+                                            <option value="Data Hall 1">Data Hall 1</option>
+                                            <option value="Data Hall 2">Data Hall 2</option>
+                                            <option value="Basement">Basement</option>
+                                            <option value="Roof / ODF">Roof / ODF</option>
+                                            <option value="Staging Area">Staging Area</option>
+                                            <option value="Other">Other...</option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label class="form-label fw-bold small">Power Source</label>
@@ -407,27 +419,6 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
     <script>
-        // PWA Setup
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
-        }
-        let deferredPrompt;
-        const installBtn = document.getElementById('installAppBtn');
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.style.display = 'block';
-        });
-        installBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') { installBtn.style.display = 'none'; }
-                deferredPrompt = null;
-            }
-        });
-
-        // GOOGLE SHEETS API
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzeYS6m9z-H1Uy52BzjLAIRhOjXD7A4F9GXn-dhq7o8rngQKmEtW4QSYtd82Sj2uOWJ2A/exec"; 
         
         let localCacheData = [];
@@ -455,6 +446,7 @@
                 dataTable.rows.add(data).draw(false); 
                 populateVisualizerSites(); 
                 
+                // If visualizer is active, redraw the rack to catch updates
                 if($('#visRackSelect').val()) generateRack();
 
                 if (!isSilent) hideLoading();
@@ -472,6 +464,7 @@
         };
 
         $(document).ready(function() {
+            // Initialize DataTable
             dataTable = $('#dwdmTable').DataTable({
                 data: [], pageLength: 25,
                 dom: '<"row mb-3"<"col-sm-12 col-md-6"><"col-sm-12 col-md-6 text-end"f>>rt<"row mt-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
@@ -490,10 +483,12 @@
             fetchDataFromSheet(false);
             setInterval(() => { fetchDataFromSheet(true); }, 300000);
 
+            // Table Filters
             $('#filterSite').on('change', function() { dataTable.column(0).search(this.value).draw(); });
             $('#filterVendor').on('change', function() { dataTable.column(5).search(this.value).draw(); });
             $('#rackId').on('input', function() { $(this).val($(this).val().toUpperCase()); });
 
+            // Form Logic
             $('#vendor').on('change', function() {
                 const selectedVendor = $(this).val(); const $modelSelect = $('#model');
                 $modelSelect.empty().append(new Option("Select Model...", "", true, true)).find('option:first').prop('disabled', true);
@@ -510,6 +505,7 @@
                 }
             });
 
+            // Form Submit
             $('#dwdmForm').on('submit', async function(e) {
                 e.preventDefault();
                 const newRow = [
@@ -537,6 +533,10 @@
             });
         });
 
+        // ----------------------------------------------------
+        // RACK VISUALIZER 2.0 LOGIC
+        // ----------------------------------------------------
+        
         function populateVisualizerSites() {
             const siteSelect = document.getElementById('visSiteSelect');
             const currentSelection = siteSelect.value;
@@ -561,6 +561,7 @@
             rackSelect.disabled = false;
         });
 
+        // Auto-Draw when Rack ID is selected
         $('#visRackSelect').on('change', function() { generateRack(); });
 
         function parseUPosition(uString) {
@@ -578,24 +579,30 @@
             
             if (!site || !rack) return;
 
+            // UI Swaps
             document.getElementById('placeholderRack').style.display = 'none';
             document.getElementById('rackCanvas').style.display = 'flex';
             document.getElementById('rackStatsCard').style.display = 'block';
 
+            // Dispose old tooltips to prevent memory leaks
             $('[data-bs-toggle="tooltip"]').tooltip('dispose');
-            mountSpace.innerHTML = ''; 
+            mountSpace.innerHTML = ''; // Clear canvas
             
             const TOTAL_U = 42; const PIXELS_PER_U = 20;
             let utilizedUSpace = 0;
 
+            // 1. Draw Background Grids & Labels
             for (let i = 1; i <= TOTAL_U; i++) {
                 let uRow = document.createElement('div');
                 uRow.className = 'rack-grid-u';
                 uRow.style.bottom = ((i - 1) * PIXELS_PER_U) + 'px';
+                
+                // Numbers on both sides
                 uRow.innerHTML = `<div class="rack-label-u">${i}</div><div class="rack-label-u">${i}</div>`;
                 mountSpace.appendChild(uRow);
             }
 
+            // 2. Filter & Draw Equipment
             const rackEquipment = localCacheData.filter(row => row[0] === site && row[2] === rack);
             
             rackEquipment.forEach(item => {
@@ -620,6 +627,7 @@
                     block.innerHTML = `<span>${vendor}</span><span style="font-size:9px; font-weight:normal">${model}</span>`;
                 }
 
+                // Native Bootstrap Tooltip configuration
                 let tooltipHTML = `<div class='text-start'>
                     <strong>Vendor:</strong> ${vendor}<br>
                     <strong>Model:</strong> ${model}<br>
@@ -636,8 +644,10 @@
                 mountSpace.appendChild(block);
             });
 
+            // Initialize new tooltips
             $('[data-bs-toggle="tooltip"]').tooltip();
 
+            // Update Stats Card
             document.getElementById('statUtilized').innerText = `${utilizedUSpace}U`;
             document.getElementById('statFree').innerText = `${TOTAL_U - utilizedUSpace}U`;
             document.getElementById('utilizationBar').style.width = `${(utilizedUSpace / TOTAL_U) * 100}%`;
@@ -658,6 +668,26 @@
                 htmlElement.setAttribute('data-bs-theme', 'light'); localStorage.setItem('theme', 'light'); toggleBtn.innerHTML = '<i class="bi bi-moon-fill me-2"></i>Dark Mode';
             } else {
                 htmlElement.setAttribute('data-bs-theme', 'dark'); localStorage.setItem('theme', 'dark'); toggleBtn.innerHTML = '<i class="bi bi-brightness-high-fill me-2"></i>Light Mode';
+            }
+        });
+        
+        // PWA Setup
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
+        }
+        let deferredPrompt;
+        const installBtn = document.getElementById('installAppBtn');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') { installBtn.style.display = 'none'; }
+                deferredPrompt = null;
             }
         });
     </script>
