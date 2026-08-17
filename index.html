@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OptiTrack - AI Intelligence</title>
+    <title>RackTrack - AI Intelligence</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- Google Fonts, Bootstrap 5.3 & Bootstrap Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,38 +19,23 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
+        /* --- GLOBAL VARIABLES --- */
         :root {
-            --bg-body: #f4f7f8;
-            --bg-sidebar: #ffffff;
-            --bg-header: #ffffff;
-            --bg-card: #ffffff;
-            
-            --text-main: #334155;
-            --text-muted: #64748b;
-            --text-accent: #0f766e;
-            
-            --border-color: #e2e8f0;
-            --color-primary: #008b8b;
-            --color-primary-hover: #006b6b;
-            
-            /* KPI Border Colors */
-            --kpi-cyan: #06b6d4;
-            --kpi-green: #10b981;
-            --kpi-orange: #f59e0b;
-            --kpi-red: #ef4444;
-            --kpi-purple: #8b5cf6;
+            --bg-body: #f4f7f8; --bg-sidebar: #ffffff; --bg-header: #ffffff; --bg-card: #ffffff;
+            --text-main: #334155; --text-muted: #64748b; --text-accent: #0f766e;
+            --border-color: #e2e8f0; --color-primary: #008b8b; --color-primary-hover: #006b6b;
+            --kpi-cyan: #06b6d4; --kpi-green: #10b981; --kpi-orange: #f59e0b; --kpi-red: #ef4444; --kpi-purple: #8b5cf6;
         }
 
         [data-bs-theme="dark"] {
-            --bg-body: #0f172a; --bg-sidebar: #1e293b; --bg-header: #1e293b; 
-            --bg-card: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
-            --border-color: #334155;
+            --bg-body: #0f172a; --bg-sidebar: #1e293b; --bg-header: #1e293b; --bg-card: #1e293b; 
+            --text-main: #f8fafc; --text-muted: #94a3b8; --border-color: #334155;
         }
 
         body { background-color: var(--bg-body); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; height: 100vh; overflow: hidden; margin: 0; }
 
-        /* --- LAYOUT: SIDEBAR --- */
-        .app-sidebar { width: 260px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10; flex-shrink: 0; }
+        /* --- SIDEBAR --- */
+        .app-sidebar { width: 260px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 1040; flex-shrink: 0; }
         .sidebar-brand { height: 70px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--border-color); }
         .sidebar-brand h4 { font-weight: 800; color: var(--color-primary); margin: 0; font-size: 1.1rem; }
         .sidebar-brand span { display: block; font-size: 0.65rem; color: var(--text-accent); font-weight: 600; letter-spacing: 1px;}
@@ -63,8 +49,8 @@
         [data-bs-theme="dark"] .menu-link.active { background-color: rgba(0, 139, 139, 0.2); }
         .sidebar-footer { padding: 15px 20px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); }
 
-        /* --- LAYOUT: MAIN AREA --- */
-        .app-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        /* --- MAIN HEADER --- */
+        .app-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; width: 100%; }
         .app-header { height: 70px; background-color: var(--bg-header); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; z-index: 5; flex-shrink: 0;}
         .header-title h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-main); }
         .header-title p { font-size: 0.75rem; color: var(--text-muted); margin: 0; }
@@ -73,16 +59,18 @@
         .btn-custom-primary { background-color: var(--color-primary); color: white; border: none; border-radius: 20px; padding: 8px 20px; font-size: 0.8rem; font-weight: 600; transition: background 0.2s; }
         .btn-custom-primary:hover { background-color: var(--color-primary-hover); color: white; }
         .btn-custom-outline { background-color: transparent; color: var(--color-primary); border: 1px solid var(--color-primary); border-radius: 20px; padding: 8px 20px; font-size: 0.8rem; font-weight: 600; }
+        
+        .header-toggle { display: none; background: transparent; border: none; font-size: 1.5rem; color: var(--text-main); margin-right: 15px; padding: 0; cursor: pointer; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1030; backdrop-filter: blur(2px); }
 
         .app-content { flex: 1; padding: 25px 30px; overflow-y: auto; }
 
-        /* --- AI BANNER --- */
+        /* --- DASHBOARD ELEMENTS --- */
         .ai-banner { background-color: #e0f2fe; border: 1px solid #bae6fd; border-radius: 12px; padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         [data-bs-theme="dark"] .ai-banner { background-color: #0c4a6e; border-color: #075985; }
         .ai-banner .icon-box { width: 45px; height: 45px; background: var(--color-primary); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
         .ai-banner .badge-insight { color: var(--color-primary); font-weight: 800; font-size: 0.7rem; letter-spacing: 1px; display: flex; align-items: center; gap: 5px; }
 
-        /* --- KPI CARDS --- */
         .kpi-section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 15px; border-left: 4px solid var(--color-primary); padding-left: 10px; }
         .kpi-main-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); height: 100%; display: flex; flex-direction: column;}
         .kpi-main-card h5 { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
@@ -100,56 +88,56 @@
         .mini-kpi .value { font-size: 1.6rem; font-weight: 700; color: var(--text-main); margin: 5px 0; line-height: 1; }
         .mini-kpi .sub-text { font-size: 0.65rem; font-weight: 600; }
         
-        /* Dark Footer Blocks */
-        .kpi-dark-footer { background-color: #0f172a; border-radius: 8px; padding: 12px; display: flex; justify-content: space-around; align-items: center; }
+        .kpi-dark-footer { background-color: #0f172a; border-radius: 8px; padding: 12px; display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 10px;}
         .dark-stat { text-align: center; color: white; }
         .dark-stat .val { font-size: 1.2rem; font-weight: 700; line-height: 1; margin-bottom: 4px; }
         .dark-stat .lbl { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; opacity: 0.8; }
         .dark-stat .pill { background: rgba(255,255,255,0.2); border-radius: 12px; font-size: 0.55rem; padding: 2px 6px; margin-top: 4px; color: #38bdf8;}
 
-        /* --- CHART CARDS --- */
         .chart-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); height: 100%; }
         .chart-container { position: relative; height: 250px; width: 100%; }
 
-        /* --- Loading Overlay --- */
-        #loadingOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 999; border-radius: 16px; backdrop-filter: blur(4px); display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        [data-bs-theme="dark"] #loadingOverlay { background: rgba(30,30,30,0.85); }
-        
-        /* Datatable Styling */
+        /* --- DATATABLES & BADGES --- */
         .table-responsive { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; overflow-x: auto;}
         table.dataTable { width: 100% !important; border-collapse: collapse !important; border: none; }
         table.dataTable thead th { background-color: rgba(0,0,0,0.02) !important; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; font-weight: 700; border-bottom: none; padding: 12px 15px; }
         table.dataTable tbody td { border-bottom: 1px solid var(--border-color); padding: 12px 15px; font-size: 0.8rem; color: var(--text-main); font-weight: 500; }
         
-        /* Badges */
-        .badge-vendor { padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.75em; }
+        .badge-vendor { padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.75em; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
         .vendor-nokia { background-color: #3b71ca; color: white; }
         .vendor-huawei { background-color: #dc4c64; color: white; }
-        .vendor-ciena { background-color: #e4a11b; color: #1a1a1a; }
+        .vendor-ciena { background-color: #e4a11b; color: #1a1a1a; text-shadow: none;}
         .vendor-infinera { background-color: #14a44d; color: white; }
+        .vendor-raisecom { background-color: #8b5cf6; color: white; }
+        .vendor-pdu { background-color: #3f3f46; color: white; }
+        .vendor-rectifier { background-color: #ea580c; color: white; }
+        .vendor-inverter { background-color: #f59e0b; color: #1a1a1a; text-shadow: none;}
         
         /* --- RACK VISUALIZER SPECIFIC --- */
         .visualizer-container { display: flex; gap: 30px; flex-wrap: wrap; }
         .vis-controls { flex: 1; min-width: 300px; }
         .vis-canvas-area { 
-            flex: 2; display: flex; justify-content: center; min-width: 350px; 
+            flex: 2; display: flex; justify-content: center; align-items: flex-start; min-width: 350px; 
             background: var(--bg-card); padding: 30px; border-radius: 12px; 
             border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.02); 
-            position: relative;
+            position: relative; overflow-x: auto; overflow-y: auto; max-height: 850px;
         }
         .rack-cabinet { 
-            width: 340px; height: 840px; background-color: #1e293b; 
+            width: 340px; background-color: #1e293b; 
             border: 12px solid #334155; border-radius: 8px; position: relative; 
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.15); 
             display: flex; justify-content: center; 
+            padding: 20px 0; margin: 0 auto;
+            flex-shrink: 0; box-sizing: content-box; transition: height 0.3s ease;
         }
         .rack-rail { 
-            width: 20px; height: 100%; background: #475569; position: absolute; top: 0; z-index: 2; 
-            border-left: 1px solid #64748b; border-right: 1px solid #1e293b; 
+            width: 20px; position: absolute; top: 0; bottom: 0; z-index: 2; 
+            background: #475569; border-left: 1px solid #64748b; border-right: 1px solid #1e293b; 
             background-image: radial-gradient(#0f172a 2px, transparent 3px); background-size: 100% 20px; 
         }
         .rack-rail.left { left: 0; } .rack-rail.right { right: 0; }
-        .rack-mount-space { width: 276px; height: 100%; position: relative; z-index: 5; }
+        .rack-mount-space { width: 276px; position: relative; z-index: 5; } 
+        
         .rack-grid-u { 
             width: 100%; height: 20px; position: absolute; box-sizing: border-box; 
             border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; 
@@ -161,8 +149,7 @@
             border: 2px solid rgba(0,0,0,0.6); border-radius: 2px; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; font-size: 12px; font-weight: 700; overflow: hidden; 
             text-align: center; cursor: pointer; text-shadow: 0px 1px 2px rgba(0,0,0,0.8); 
-            box-shadow: inset 0 2px 10px rgba(255,255,255,0.2); color: white;
-            transition: transform 0.1s ease; 
+            box-shadow: inset 0 2px 10px rgba(255,255,255,0.2); color: white; transition: transform 0.1s ease; 
         }
         .tooltip-inner { text-align: left; max-width: 250px; padding: 10px; border-radius: 8px; }
         #placeholderRack {
@@ -170,18 +157,41 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
 
-        /* Database Toolbar Horizontal Align fixes */
+        /* --- LOADING OVERLAY --- */
+        #loadingOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 999; border-radius: 16px; backdrop-filter: blur(4px); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        [data-bs-theme="dark"] #loadingOverlay { background: rgba(30,30,30,0.85); }
         .form-control-sm, .form-select-sm { padding: 8px 12px; font-size: 0.85rem; }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 991.98px) {
+            .app-sidebar {
+                position: fixed; height: 100%; top: 0; left: 0;
+                transform: translateX(-100%); transition: transform 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+            .app-sidebar.show { transform: translateX(0); }
+            .sidebar-overlay.active { display: block; }
+            .header-toggle { display: block; }
+            .app-header { padding: 0 15px; }
+            .app-content { padding: 15px; }
+            .header-actions { gap: 8px; }
+            .btn-custom-outline, .btn-custom-primary { padding: 6px 12px; font-size: 0.75rem; }
+            .vis-canvas-area { min-width: 100%; padding: 15px 5px; justify-content: flex-start; }
+            .db-toolbar { width: 100%; overflow-x: auto; padding-bottom: 10px; }
+            .ai-banner { flex-direction: column; align-items: flex-start; gap: 15px; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- SIDEBAR NAVIGATION -->
+    <!-- MOBILE OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- SIDEBAR -->
     <aside class="app-sidebar">
         <div class="sidebar-brand">
             <div class="bg-light text-primary rounded p-1 me-2"><i class="bi bi-activity"></i></div>
             <div>
-                <h4>OptiTrack</h4>
+                <h4>RackTrack</h4>
                 <span>AI INTELLIGENCE</span>
             </div>
         </div>
@@ -197,47 +207,48 @@
             <a class="menu-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1XAip3cPjmOHmR4tJBLJOKZoskaC87LWNgsh1IcC_Sd0/edit', '_blank')"><i class="bi bi-file-earmark-spreadsheet"></i> Raw Data Sheet</a>
         </div>
         <div class="sidebar-footer">
-            <i class="bi bi-circle-fill text-success me-1" style="font-size: 8px;"></i> Live • just now
+            <i class="bi bi-circle-fill text-success me-1" style="font-size: 8px;"></i> Live • Optimized
         </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
+    <!-- MAIN APP -->
     <main class="app-main">
-        
-        <!-- TOP HEADER -->
         <header class="app-header">
-            <div class="header-title">
-                <h2 id="headerPageTitle">Rack Overview</h2>
-                <p>Infrastructure Performance Dashboard · Layer 1 & 2 DWDM</p>
+            <div class="d-flex align-items-center">
+                <button class="header-toggle" id="mobileMenuBtn"><i class="bi bi-list"></i></button>
+                <div class="header-title">
+                    <h2 id="headerPageTitle">Rack Overview</h2>
+                    <p class="d-none d-md-block">Infrastructure Performance Dashboard · Layer 1 & 2 DWDM</p>
+                </div>
             </div>
             <div class="header-actions">
-                <div class="status-pill"><i class="bi bi-clock me-2"></i> <span id="currentTime">00:00:00</span></div>
-                <div class="status-pill" id="syncStatus"><i class="bi bi-hourglass-split me-2"></i> Syncing...</div>
-                <button class="btn-custom-outline" onclick="fetchDataFromSheet(false)"><i class="bi bi-download me-1"></i> Refresh</button>
-                <button class="btn-custom-primary" id="darkModeToggle"><i class="bi bi-moon-fill me-1"></i> Theme</button>
+                <div class="status-pill d-none d-sm-flex"><i class="bi bi-clock me-2"></i> <span id="currentTime">00:00:00</span></div>
+                <div class="status-pill" id="syncStatus"><i class="bi bi-hourglass-split"></i><span class="d-none d-md-inline ms-2">Syncing...</span></div>
+                <button class="btn-custom-outline" onclick="fetchDataFromSheet(false)">
+                    <i class="bi bi-download"></i><span class="d-none d-md-inline ms-1"> Refresh</span>
+                </button>
+                <button class="btn-custom-primary" id="darkModeToggle">
+                    <i class="bi bi-moon-fill"></i><span class="d-none d-md-inline ms-1"> Theme</span>
+                </button>
             </div>
         </header>
 
-        <!-- SCROLLABLE CONTENT -->
         <div class="app-content position-relative">
-            
             <div id="loadingOverlay">
                 <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
                 <h5 class="mt-3 text-secondary fw-bold" id="loadingText">Syncing Database...</h5>
             </div>
 
-            <!-- BOOTSTRAP TAB CONTENT -->
             <div class="tab-content" id="myTabContent">
                 
-                <!-- TAB 1: RACK OVERVIEW -->
+                <!-- RACK OVERVIEW -->
                 <div class="tab-pane fade show active" id="overview" role="tabpanel">
-                    
                     <div class="ai-banner">
                         <div class="d-flex align-items-center gap-3">
                             <div class="icon-box"><i class="bi bi-cpu"></i></div>
                             <div>
                                 <div class="badge-insight mb-1"><i class="bi bi-stars"></i> AI INSIGHT ENGINE • LIVE</div>
-                                <h5 class="fw-bold mb-1" style="color: var(--text-main); font-size: 1rem;">Portfolio at <span id="aiSyncRate">100</span>% health — <span id="aiActiveText">0</span> active optical devices</h5>
+                                <h5 class="fw-bold mb-1" style="color: var(--text-main); font-size: 1rem;">Portfolio at <span id="aiSyncRate">100</span>% health — <span id="aiActiveText">0</span> active devices</h5>
                                 <div class="text-muted" style="font-size: 0.8rem;">AI engine scanned <span id="aiSitesText">0</span> sites + <span id="aiRacksText">0</span> unique racks. Primary hub: <span id="aiTopSite" class="fw-bold text-uppercase">N/A</span>.</div>
                             </div>
                         </div>
@@ -247,14 +258,14 @@
                     <div class="kpi-section-title">Key Performance Indicators</div>
                     
                     <div class="row g-4 mb-4">
-                        <div class="col-xl-4 col-lg-6">
+                        <div class="col-xl-4 col-lg-12">
                             <div class="kpi-main-card">
                                 <h5><i class="bi bi-hdd-network text-primary"></i> INFRASTRUCTURE OVERVIEW</h5>
                                 <div class="mini-kpi-grid">
                                     <div class="mini-kpi b-cyan"><div class="title">Total Equip</div><div class="value" id="kTotalEq">0</div><div class="sub-text text-primary">Installed</div></div>
                                     <div class="mini-kpi b-green"><div class="title">Active Sites</div><div class="value" id="kActiveSites">0</div><div class="sub-text text-success">100% online</div></div>
                                     <div class="mini-kpi b-orange"><div class="title">Total Racks</div><div class="value" id="kTotalRacks">0</div><div class="sub-text text-warning">Tracked</div></div>
-                                    <div class="mini-kpi b-red w-100"><div class="title">Data Conflicts</div><div class="value text-danger">0</div><div class="sub-text text-danger">Resolved</div></div>
+                                    <div class="mini-kpi b-red"><div class="title">Data Conflicts</div><div class="value text-danger">0</div><div class="sub-text text-danger">Resolved</div></div>
                                 </div>
                                 <div class="kpi-dark-footer mt-auto">
                                     <div class="dark-stat"><div class="val" id="kPwrAC">0</div><div class="lbl">AC Power</div><div class="pill">Active</div></div>
@@ -263,8 +274,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-xl-4 col-lg-6">
+                        <div class="col-xl-4 col-md-6">
                             <div class="kpi-main-card">
                                 <h5><i class="bi bi-cpu text-success"></i> VENDOR DEPLOYMENTS</h5>
                                 <div class="mini-kpi-grid">
@@ -275,12 +285,11 @@
                                 <div class="kpi-dark-footer mt-auto">
                                     <div class="dark-stat"><div class="val" id="kCiena">0</div><div class="lbl">Ciena Nodes</div></div>
                                     <div class="dark-stat"><div class="val" id="kInfinera">0</div><div class="lbl">Infinera Nodes</div></div>
-                                    <div class="dark-stat"><div class="val" id="kOther">0</div><div class="lbl">Other</div></div>
+                                    <div class="dark-stat"><div class="val" id="kOther">0</div><div class="lbl">Other + PDU</div></div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-xl-4 col-lg-6">
+                        <div class="col-xl-4 col-md-6">
                             <div class="kpi-main-card">
                                 <h5><i class="bi bi-server text-warning"></i> CAPACITY TRACKER</h5>
                                 <div class="mini-kpi-grid">
@@ -297,7 +306,6 @@
                     </div>
 
                     <div class="kpi-section-title">Distribution & Breakdown</div>
-                    
                     <div class="row g-4 mb-4">
                         <div class="col-lg-6">
                             <div class="chart-card">
@@ -318,10 +326,9 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
 
-                <!-- TAB 2: RACK VISUALIZER -->
+                <!-- RACK VISUALIZER -->
                 <div class="tab-pane fade" id="visualizer" role="tabpanel">
                     <div class="visualizer-container">
                         <div class="vis-controls">
@@ -329,28 +336,30 @@
                                 <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-search me-2"></i>Select Rack</h5>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">Site</label>
-                                    <select class="form-select" id="visSiteSelect">
-                                        <option value="" disabled selected>Choose a site...</option>
-                                    </select>
+                                    <select class="form-select" id="visSiteSelect"><option value="" disabled selected>Choose a site...</option></select>
                                 </div>
                                 <div>
                                     <label class="form-label small fw-bold">Rack ID</label>
-                                    <select class="form-select" id="visRackSelect" disabled>
-                                        <option value="" disabled selected>Select site first...</option>
-                                    </select>
+                                    <select class="form-select" id="visRackSelect" disabled><option value="" disabled selected>Select site first...</option></select>
                                 </div>
-                            </div>
-                            <div class="chart-card text-center" id="rackStatsCard" style="display: none;">
-                                <h6 class="fw-bold text-muted mb-3">RACK UTILIZATION</h6>
-                                <div class="display-4 fw-bold text-primary mb-0" id="statUtilized">0U</div>
-                                <div class="text-muted small">Occupied Space</div><hr class="my-3">
-                                <div class="display-6 fw-bold text-success mb-0" id="statFree">42U</div>
-                                <div class="text-muted small">Free Space</div>
-                                <div class="progress mt-4" style="height: 10px;"><div id="utilizationBar" class="progress-bar bg-primary" style="width: 0%"></div></div>
+                                
+                                <div id="rackStatsCard" style="display: none;">
+                                    <hr class="my-4">
+                                    <div class="text-center">
+                                        <h6 class="fw-bold text-muted mb-3">RACK UTILIZATION</h6>
+                                        <div class="display-4 fw-bold text-primary mb-0" id="statUtilized">0U</div>
+                                        <div class="text-muted small">Occupied Space</div>
+                                        <hr class="my-3">
+                                        <div class="display-6 fw-bold text-success mb-0" id="statFree">42U</div>
+                                        <div class="text-muted small">Free Space</div>
+                                        <div class="progress mt-4" style="height: 10px;">
+                                            <div id="utilizationBar" class="progress-bar bg-primary" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <!-- Canvas Area -->
                         <div class="vis-canvas-area">
                             <div id="placeholderRack">
                                 <i class="bi bi-server text-muted" style="font-size: 7rem; opacity: 0.15;"></i>
@@ -364,26 +373,20 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: RACK DATABASE -->
+                <!-- RACK DATABASE -->
                 <div class="tab-pane fade" id="database" role="tabpanel">
                     <div class="table-responsive">
-                        
-                        <!-- Horizontal Toolbar -->
                         <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center mb-4 gap-3">
                             <div>
                                 <h5 class="fw-bold m-0"><i class="bi bi-database me-2 text-primary"></i>Rack Database</h5>
                                 <p class="text-muted small mb-0">Master Layer 1 & 2 Infrastructure Repository</p>
                             </div>
-                            
-                            <!-- Purely Horizontal Align for Inputs -->
-                            <div class="d-flex flex-row flex-nowrap align-items-center gap-2 overflow-auto pb-1">
-                                <!-- Search -->
+                            <div class="d-flex flex-row flex-nowrap align-items-center gap-2 overflow-auto pb-1 db-toolbar">
                                 <div class="position-relative">
                                     <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left: 10px; font-size: 0.85rem;"></i>
-                                    <input type="text" id="dbCustomSearch" class="form-control form-control-sm shadow-sm w-auto" placeholder="Search records..." style="padding-left: 32px; min-width: 200px;">
+                                    <input type="text" id="dbCustomSearch" class="form-control form-control-sm shadow-sm w-auto" placeholder="Search records..." style="padding-left: 32px; min-width: 150px;">
                                 </div>
-                                <!-- Filters -->
-                                <select id="dbFilterSite" class="form-select form-select-sm shadow-sm w-auto" style="min-width: 150px;">
+                                <select id="dbFilterSite" class="form-select form-select-sm shadow-sm w-auto" style="min-width: 130px;">
                                     <option value="">All Sites</option>
                                     <option value="AIMS CYBERJAYA">AIMS CYBERJAYA</option>
                                     <option value="CX2">CX2</option>
@@ -396,7 +399,7 @@
                                     <option value="ANSAR">ANSAR</option>
                                     <option value="NCC KL">NCC KL</option>
                                 </select>
-                                <select id="dbFilterVendor" class="form-select form-select-sm shadow-sm w-auto" style="min-width: 150px;">
+                                <select id="dbFilterVendor" class="form-select form-select-sm shadow-sm w-auto" style="min-width: 130px;">
                                     <option value="">All Vendors</option>
                                     <option value="Nokia">Nokia</option>
                                     <option value="Huawei">Huawei</option>
@@ -404,6 +407,10 @@
                                     <option value="Infinera">Infinera</option>
                                     <option value="BTI">BTI</option>
                                     <option value="Juniper">Juniper</option>
+                                    <option value="Raisecom">Raisecom</option>
+                                    <option value="PDU">PDU</option>
+                                    <option value="Rectifier">Rectifier</option>
+                                    <option value="Inverter">Inverter</option>
                                     <option value="Others">Others</option>
                                 </select>
                                 <button class="btn-custom-primary text-nowrap shadow-sm ms-1" data-bs-toggle="modal" data-bs-target="#addModal">
@@ -415,7 +422,7 @@
                         <table id="dwdmTable" class="table table-hover align-middle w-100">
                             <thead>
                                 <tr>
-                                    <th>Site Name</th><th>Room</th><th>Rack ID</th><th>Size</th>
+                                    <th>Site Name</th><th>Room</th><th>Rack ID</th><th>Specs</th>
                                     <th>U-Pos</th><th>Vendor</th><th>Model</th><th>Power</th><th>Notes</th><th>Act</th>
                                 </tr>
                             </thead>
@@ -455,31 +462,34 @@
                             <option value="NCC KL">NCC KL</option>
                         </select>
                     </div>
-                    
-                    <!-- Dynamic Datalist for Room -->
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Room</label>
                         <input type="text" class="form-control" id="room" list="roomOptions" placeholder="Select or type new..." required>
                         <datalist id="roomOptions"></datalist>
                     </div>
-
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Power Source</label>
                         <select class="form-select" id="powerSource" required>
                             <option value="AC Power">AC Power</option><option value="DC Power">DC Power</option>
                         </select>
                     </div>
-
-                    <!-- Dynamic Datalist for Rack ID -->
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Rack ID</label>
                         <input type="text" class="form-control" id="rackId" list="rackOptions" placeholder="Select or type new..." required>
                         <datalist id="rackOptions"></datalist>
                     </div>
-
-                    <div class="col-md-4"><label class="form-label small fw-bold">Rack Size</label><select class="form-select" id="rackSize" required><option value="19 inch">19 inch (EIA)</option><option value="21 inch">21 inch (ETSI)</option></select></div>
-                    <div class="col-md-4"><label class="form-label small fw-bold">U-Position</label><input type="text" class="form-control" id="uPosition" placeholder="e.g. U10-U12" pattern="^[Uu]?[1-9][0-9]?(\s*-\s*[Uu]?[1-9][0-9]?)?$" title="Format: U1 or U10-U12" required></div>
-                    
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">Rack Width</label>
+                        <select class="form-select" id="rackSize" required><option value="19 inch">19"</option><option value="21 inch">21"</option></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">Height (U)</label>
+                        <input type="number" class="form-control" id="rackHeight" value="42" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">U-Position</label>
+                        <input type="text" class="form-control" id="uPosition" placeholder="e.g. U10-U12" pattern="^[Uu]?[1-9][0-9]?(\s*-\s*[Uu]?[1-9][0-9]?)?$" required>
+                    </div>
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Vendor</label>
                         <select class="form-select" id="vendor" required>
@@ -487,6 +497,8 @@
                             <option value="Nokia">Nokia</option><option value="Huawei">Huawei</option>
                             <option value="Ciena">Ciena</option><option value="Infinera">Infinera</option>
                             <option value="BTI">BTI</option><option value="Juniper">Juniper</option>
+                            <option value="Raisecom">Raisecom</option><option value="PDU">PDU</option>
+                            <option value="Rectifier">Rectifier</option><option value="Inverter">Inverter</option>
                             <option value="Others">Others</option>
                         </select>
                     </div>
@@ -529,32 +541,28 @@
                             <option value="NCC KL">NCC KL</option>
                         </select>
                     </div>
-
-                    <!-- Dynamic Datalist for Edit Room -->
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Room</label>
-                        <input type="text" class="form-control" id="editRoom" list="editRoomOptions" placeholder="Select or type new..." required>
+                        <input type="text" class="form-control" id="editRoom" list="editRoomOptions" required>
                         <datalist id="editRoomOptions"></datalist>
                     </div>
-
                     <div class="col-md-4"><label class="form-label small fw-bold">Power Source</label><select class="form-select" id="editPowerSource" required><option value="AC Power">AC Power</option><option value="DC Power">DC Power</option></select></div>
-                    
-                    <!-- Dynamic Datalist for Edit Rack ID -->
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Rack ID</label>
-                        <input type="text" class="form-control" id="editRackId" list="editRackOptions" placeholder="Select or type new..." required>
+                        <input type="text" class="form-control" id="editRackId" list="editRackOptions" required>
                         <datalist id="editRackOptions"></datalist>
                     </div>
-
-                    <div class="col-md-4"><label class="form-label small fw-bold">Rack Size</label><select class="form-select" id="editRackSize" required><option value="19 inch">19 inch</option><option value="21 inch">21 inch</option></select></div>
+                    <div class="col-md-2"><label class="form-label small fw-bold">Rack Width</label><select class="form-select" id="editRackSize" required><option value="19 inch">19"</option><option value="21 inch">21"</option></select></div>
+                    <div class="col-md-2"><label class="form-label small fw-bold">Height (U)</label><input type="number" class="form-control" id="editRackHeight" required></div>
                     <div class="col-md-4"><label class="form-label small fw-bold">U-Position</label><input type="text" class="form-control" id="editUPosition" pattern="^[Uu]?[1-9][0-9]?(\s*-\s*[Uu]?[1-9][0-9]?)?$" required></div>
-                    
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Vendor</label>
                         <select class="form-select" id="editVendor" required>
                             <option value="Nokia">Nokia</option><option value="Huawei">Huawei</option>
                             <option value="Ciena">Ciena</option><option value="Infinera">Infinera</option>
                             <option value="BTI">BTI</option><option value="Juniper">Juniper</option>
+                            <option value="Raisecom">Raisecom</option><option value="PDU">PDU</option>
+                            <option value="Rectifier">Rectifier</option><option value="Inverter">Inverter</option>
                             <option value="Others">Others</option>
                         </select>
                     </div>
@@ -578,13 +586,21 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
     <script>
-        // Clock Update
-        setInterval(() => { document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
+        // --- MOBILE MENU LOGIC ---
+        $('#mobileMenuBtn, #sidebarOverlay').on('click', function() {
+            $('.app-sidebar').toggleClass('show');
+            $('#sidebarOverlay').toggleClass('active');
+        });
 
-        // --- FIXED TAB SWITCHER ---
+        // --- TAB SWITCHER ---
         function switchTab(tabId, element) {
             $('.menu-link').removeClass('active'); 
             if(element) $(element).addClass('active');
+            
+            if (window.innerWidth < 992) {
+                $('.app-sidebar').removeClass('show');
+                $('#sidebarOverlay').removeClass('active');
+            }
             
             let titles = { 'overview':'Rack Overview', 'database':'Rack Database', 'visualizer':'Rack Visualizer'};
             $('#headerPageTitle').text(titles[tabId]);
@@ -602,12 +618,13 @@
         // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzeYS6m9z-H1Uy52BzjLAIRhOjXD7A4F9GXn-dhq7o8rngQKmEtW4QSYtd82Sj2uOWJ2A/exec"; 
         
-        let localCacheData = []; let dataTable; let editingDtRow; let oldRowData;
-        let chart1, chart2;
+        let localCacheData = []; let dataTable; let editingDtRow; let oldRowData; let chart1, chart2;
 
         function showLoading(msg) { $('#loadingText').text(msg); $('#loadingOverlay').css('display', 'flex'); }
         function hideLoading() { $('#loadingOverlay').hide(); }
-        function updateSyncStatus(status, color, icon) { $('#syncStatus').html(`<i class="bi ${icon} me-2 text-${color}"></i> ${status}`); }
+        function updateSyncStatus(status, color, icon) { 
+            $('#syncStatus').html(`<i class="bi ${icon} text-${color}"></i><span class="d-none d-md-inline ms-2">${status}</span>`); 
+        }
 
         function parseUPosition(uString) {
             let m = String(uString).match(/[uU]?(\d+)(?:\s*-\s*[uU]?(\d+))?/); 
@@ -617,31 +634,32 @@
             return { startU: s, sizeU: (e-s)+1 };
         }
 
-        // --- DASHBOARD KPI & CHART ENGINE ---
+        // --- DASHBOARD LOGIC ---
         function updateDashboard(data) {
             if(!data || data.length === 0) return;
-
             let sites = new Set(); let racks = new Set(); let rooms = new Set();
-            let vendorCounts = { 'Nokia':0, 'Huawei':0, 'Ciena':0, 'Infinera':0, 'Other':0 };
+            let vendorCounts = { 'Nokia':0, 'Huawei':0, 'Ciena':0, 'Infinera':0, 'Raisecom':0, 'PDU':0, 'Rectifier':0, 'Inverter':0, 'Other':0 };
             let powerAC = 0; let powerDC = 0; let size19 = 0; let size21 = 0;
-            let totalUUsed = 0;
-            let rackUsageMap = {};
+            let totalUUsed = 0; let rackUsageMap = {}; let totalRackCapacity = 0; 
+            let processedRacksForCapacity = new Set();
 
             data.forEach(row => {
                 let site = row[0]; let room = row[1]; let rack = row[2]; let size = row[3];
-                let uPos = row[4]; let vendor = row[5]; let pwr = row[7];
+                let uPos = row[4]; let vendor = row[5]; let pwr = row[7]; let rHeight = parseInt(row[9]) || 42;
                 let rackUniqueId = site + "||" + rack;
 
                 sites.add(site); racks.add(rackUniqueId); rooms.add(room);
-                
                 if(vendorCounts.hasOwnProperty(vendor)) vendorCounts[vendor]++; else vendorCounts['Other']++;
                 if(String(pwr).includes("AC")) powerAC++; else powerDC++;
                 if(String(size).includes("19")) size19++; else size21++;
 
+                if (!processedRacksForCapacity.has(rackUniqueId)) {
+                    totalRackCapacity += rHeight; processedRacksForCapacity.add(rackUniqueId);
+                }
+
                 let pU = parseUPosition(uPos);
                 if(pU) {
-                    let uSize = pU.sizeU;
-                    totalUUsed += uSize;
+                    let uSize = pU.sizeU; totalUUsed += uSize;
                     rackUsageMap[rackUniqueId] = (rackUsageMap[rackUniqueId] || 0) + uSize;
                 }
             });
@@ -649,19 +667,14 @@
             let critRacks = Object.values(rackUsageMap).filter(used => used >= 33).length;
             let topSite = [...sites].length > 0 ? [...sites][0] : "N/A";
 
-            $('#aiActiveText').text(data.length);
-            $('#aiSitesText').text(sites.size);
-            $('#aiRacksText').text(racks.size);
-            $('#aiTopSite').text(topSite);
-
+            $('#aiActiveText').text(data.length); $('#aiSitesText').text(sites.size); $('#aiRacksText').text(racks.size); $('#aiTopSite').text(topSite);
             $('#kTotalEq').text(data.length); $('#kActiveSites').text(sites.size); $('#kTotalRacks').text(racks.size);
             $('#kPwrAC').text(powerAC); $('#kPwrDC').text(powerDC); $('#kRooms').text(rooms.size);
-            
             $('#kVendors').text(Object.values(vendorCounts).filter(v => v>0).length);
             $('#kNokia').text(vendorCounts['Nokia']); $('#kHuawei').text(vendorCounts['Huawei']);
-            $('#kCiena').text(vendorCounts['Ciena']); $('#kInfinera').text(vendorCounts['Infinera']); $('#kOther').text(vendorCounts['Other']);
-            
-            $('#kTotalU').text(racks.size * 42); $('#kUsedU').text(totalUUsed); $('#kCritRacks').text(critRacks);
+            $('#kCiena').text(vendorCounts['Ciena']); $('#kInfinera').text(vendorCounts['Infinera']); 
+            $('#kOther').text(vendorCounts['Other'] + vendorCounts['PDU'] + vendorCounts['Rectifier'] + vendorCounts['Inverter'] + vendorCounts['Raisecom']);
+            $('#kTotalU').text(totalRackCapacity); $('#kUsedU').text(totalUUsed); $('#kCritRacks').text(critRacks);
             $('#k19in').text(size19); $('#k21in').text(size21);
 
             let siteCounts = {}; data.forEach(r => { siteCounts[r[0]] = (siteCounts[r[0]]||0)+1; });
@@ -669,96 +682,70 @@
             if(chart1) chart1.destroy(); if(chart2) chart2.destroy();
             Chart.defaults.font.family = "'Inter', sans-serif";
 
-            const ctx1 = document.getElementById('siteChart').getContext('2d');
-            chart1 = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(siteCounts),
-                    datasets: [{ label: 'Equipments', data: Object.values(siteCounts), backgroundColor: '#008b8b', borderRadius: 4 }]
-                },
+            chart1 = new Chart(document.getElementById('siteChart').getContext('2d'), {
+                type: 'bar', data: { labels: Object.keys(siteCounts), datasets: [{ label: 'Equipments', data: Object.values(siteCounts), backgroundColor: '#008b8b', borderRadius: 4 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
 
-            const ctx2 = document.getElementById('vendorChart').getContext('2d');
-            chart2 = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Nokia', 'Huawei', 'Ciena', 'Infinera', 'Other'],
-                    datasets: [{ data: [vendorCounts['Nokia'], vendorCounts['Huawei'], vendorCounts['Ciena'], vendorCounts['Infinera'], vendorCounts['Other']], 
-                    backgroundColor: ['#3b71ca', '#dc4c64', '#e4a11b', '#14a44d', '#94a3b8'], borderWidth: 0 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
+            chart2 = new Chart(document.getElementById('vendorChart').getContext('2d'), {
+                type: 'doughnut', data: {
+                    labels: ['Nokia', 'Huawei', 'Ciena', 'Infinera', 'Raisecom', 'PDU/PWR', 'Other'],
+                    datasets: [{ data: [vendorCounts['Nokia'], vendorCounts['Huawei'], vendorCounts['Ciena'], vendorCounts['Infinera'], vendorCounts['Raisecom'], (vendorCounts['PDU'] + vendorCounts['Rectifier'] + vendorCounts['Inverter']), vendorCounts['Other']], backgroundColor: ['#3b71ca', '#dc4c64', '#e4a11b', '#14a44d', '#8b5cf6', '#ea580c', '#94a3b8'], borderWidth: 0 }]
+                }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
             });
         }
 
-        // --- CORE DATA FETCH ---
         async function fetchDataFromSheet(isSilent = false) {
             if (!isSilent) showLoading("Syncing latest data...");
-            updateSyncStatus('Syncing...', 'warning', 'bi-arrow-repeat');
+            updateSyncStatus('Syncing', 'warning', 'bi-arrow-repeat');
             try {
                 const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
-                
-                localCacheData = data;
-                dataTable.clear(); dataTable.rows.add(data).draw(false); 
-                updateDashboard(data);
-                populateVisualizerSites(); 
-                if($('#visRackSelect').val()) generateRack();
-
-                if (!isSilent) hideLoading();
-                updateSyncStatus('Live Sync', 'success', 'bi-circle-fill');
+                localCacheData = data; dataTable.clear(); dataTable.rows.add(data).draw(false); 
+                updateDashboard(data); populateVisualizerSites(); if($('#visRackSelect').val()) generateRack();
+                if (!isSilent) hideLoading(); updateSyncStatus('Live Sync', 'success', 'bi-circle-fill');
             } catch (error) {
                 if (!isSilent) { alert("Network error"); hideLoading(); }
                 updateSyncStatus('Offline', 'danger', 'bi-wifi-off');
             }
         }
 
-        // --- HARDWARE CATALOG ---
         const hardwareModels = {
-            'Nokia': ['PSS-8', 'PSS-16', 'PSS-32', 'PSS-24x'], 'Huawei': ['M12', 'OSN 9800', 'OSN 1800'],
+            'Nokia': ['PSS-8', 'PSS-16', 'PSS-32', 'PSS-24x'], 'Huawei': ['M12', 'OSN 9800', 'OSN 1800', 'PDU'],
             'Ciena': ['6500', 'Waveserver Ai', 'Z-Series'], 'Infinera': ['Groove G30', 'XTC', 'DTN-X'],
-            'BTI': ['7814', '704', 'PVX'], 'Juniper': ['PTX', 'MX Access', 'Aggregation'], 'Others': ['N/A or Custom']
+            'BTI': ['7814', '704', 'PVX'], 'Juniper': ['PTX', 'MX Access', 'Aggregation'], 
+            'Raisecom': ['ISCOM', 'DCI', 'Other'], 'PDU': ['Basic', 'Switched', 'Metered', 'Other'],
+            'Rectifier': ['Standard', 'High Capacity', 'Other'], 'Inverter': ['Standard', 'Other'], 'Others': ['N/A or Custom']
         };
 
         function handleVendorChange(val, $el, def="") {
             $el.empty().append(new Option("Select Model...", "", true, true)).find('option:first').prop('disabled', true);
             if(hardwareModels[val]) hardwareModels[val].forEach(m => $el.append(new Option(m, m)));
+            else $el.append(new Option("N/A", "N/A"));
             if(def) $el.val(def);
         }
 
-        // --- POPULATE DATALISTS DYNAMICALLY ---
         function updateFormDatalists(siteValue, roomListId, rackListId) {
-            const $roomList = $('#' + roomListId);
-            const $rackList = $('#' + rackListId);
-            $roomList.empty();
-            $rackList.empty();
-            
-            if(!siteValue) return;
-
+            const $roomList = $('#' + roomListId); const $rackList = $('#' + rackListId);
+            $roomList.empty(); $rackList.empty(); if(!siteValue) return;
             const siteData = localCacheData.filter(r => r[0] === siteValue);
-            const uniqueRooms = [...new Set(siteData.map(r => r[1]))].sort();
-            const uniqueRacks = [...new Set(siteData.map(r => r[2]))].sort();
-
-            uniqueRooms.forEach(room => $roomList.append(new Option(room)));
-            uniqueRacks.forEach(rack => $rackList.append(new Option(rack)));
+            [...new Set(siteData.map(r => r[1]))].sort().forEach(room => $roomList.append(new Option(room)));
+            [...new Set(siteData.map(r => r[2]))].sort().forEach(rack => $rackList.append(new Option(rack)));
         }
 
-
-        // --- DOCUMENT READY ---
         $(document).ready(function() {
-            // Setup DataTable (Custom search box implemented above table)
             dataTable = $('#dwdmTable').DataTable({
-                data: [], pageLength: 15,
-                dom: 'rt<"row mt-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                data: [], pageLength: 15, dom: 'rt<"row mt-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
                 columns: [
                     { title: "SITE NAME" }, { title: "ROOM" }, { title: "RACK ID" },
-                    { title: "SIZE" }, { title: "U-POS" }, { title: "VENDOR" },
-                    { title: "MODEL" }, { title: "POWER" }, { title: "NOTES" },
-                    { defaultContent: '<button class="btn btn-sm text-primary btn-edit" title="Edit Record"><i class="bi bi-pencil-square"></i></button>', orderable: false }
+                    { title: "SPECS", render: function(data, type, row) { return row[3] + ' / ' + (row[9] ? row[9] + 'U' : '42U'); } }, 
+                    { title: "U-POS" }, { title: "VENDOR" }, { title: "MODEL" }, { title: "POWER" }, { title: "NOTES" },
+                    { title: "ACT", orderable: false, render: function() { return '<button class="btn btn-sm text-primary btn-edit" title="Edit Record"><i class="bi bi-pencil-square"></i></button>'; } }
                 ],
                 createdRow: function(row, data) {
                     let v = data[5]; let bg = 'vendor-other';
                     if(v==='Nokia') bg='vendor-nokia'; if(v==='Huawei') bg='vendor-huawei'; if(v==='Ciena') bg='vendor-ciena'; if(v==='Infinera') bg='vendor-infinera';
+                    if(v==='Raisecom') bg='vendor-raisecom'; if(v==='PDU') bg='vendor-pdu'; if(v==='Rectifier') bg='vendor-rectifier'; if(v==='Inverter') bg='vendor-inverter';
                     $('td:eq(5)', row).html(`<span class="badge-vendor ${bg}">${v}</span>`);
                 }
             });
@@ -766,60 +753,50 @@
             fetchDataFromSheet(false);
             setInterval(() => { fetchDataFromSheet(true); }, 300000);
 
-            // Database Filters Binding
             $('#dbCustomSearch').on('keyup', function() { dataTable.search(this.value).draw(); });
             $('#dbFilterSite').on('change', function() { dataTable.column(0).search(this.value).draw(); });
             $('#dbFilterVendor').on('change', function() { dataTable.column(5).search(this.value).draw(); });
+            $(window).resize(function() { if($('#database').hasClass('active')) dataTable.columns.adjust(); });
 
             $('#vendor').on('change', function() { handleVendorChange($(this).val(), $('#model')); });
             $('#editVendor').on('change', function() { handleVendorChange($(this).val(), $('#editModel')); });
             $('#rackId, #editRackId').on('input', function() { $(this).val($(this).val().toUpperCase()); });
 
-            // Dynamic Datalist triggers
+            $('#rackId').on('change', function() {
+                let existing = localCacheData.find(r => r[0] === $('#siteName').val() && r[2] === $(this).val());
+                if (existing) { $('#rackSize').val(existing[3]); $('#rackHeight').val(existing[9] || 42); }
+            });
+            $('#editRackId').on('change', function() {
+                let existing = localCacheData.find(r => r[0] === $('#editSiteName').val() && r[2] === $(this).val());
+                if (existing) { $('#editRackSize').val(existing[3]); $('#editRackHeight').val(existing[9] || 42); }
+            });
+
             $('#siteName').on('change', function() {
-                let siteVal = $(this).val();
-                updateFormDatalists(siteVal, 'roomOptions', 'rackOptions');
-                let m = localCacheData.find(r => r[0] === siteVal);
-                if(m) { $('#powerSource').val(m[7]); }
+                updateFormDatalists($(this).val(), 'roomOptions', 'rackOptions');
+                let m = localCacheData.find(r => r[0] === $(this).val()); if(m) { $('#powerSource').val(m[7]); }
             });
+            $('#editSiteName').on('change', function() { updateFormDatalists($(this).val(), 'editRoomOptions', 'editRackOptions'); });
 
-            $('#editSiteName').on('change', function() {
-                let siteVal = $(this).val();
-                updateFormDatalists(siteVal, 'editRoomOptions', 'editRackOptions');
-            });
-
-            // Edit Trigger
             $('#dwdmTable tbody').on('click', '.btn-edit', function () {
                 editingDtRow = dataTable.row($(this).parents('tr')); oldRowData = editingDtRow.data();
-                
-                $('#editSiteName').val(oldRowData[0]); 
-                // Populate datalists BEFORE setting the values
-                updateFormDatalists(oldRowData[0], 'editRoomOptions', 'editRackOptions');
-                
-                $('#editRoom').val(oldRowData[1]); 
-                $('#editRackId').val(oldRowData[2]); 
-                $('#editRackSize').val(oldRowData[3]);
-                $('#editUPosition').val(oldRowData[4]); 
-                $('#editPowerSource').val(oldRowData[7]); 
-                $('#editNotes').val(oldRowData[8]);
-                
-                $('#editVendor').val(oldRowData[5]); 
-                handleVendorChange(oldRowData[5], $('#editModel'), oldRowData[6]);
-                
+                $('#editSiteName').val(oldRowData[0]); updateFormDatalists(oldRowData[0], 'editRoomOptions', 'editRackOptions');
+                $('#editRoom').val(oldRowData[1]); $('#editRackId').val(oldRowData[2]); $('#editRackSize').val(oldRowData[3]);
+                $('#editRackHeight').val(oldRowData[9] || 42); $('#editUPosition').val(oldRowData[4]); 
+                $('#editPowerSource').val(oldRowData[7]); $('#editNotes').val(oldRowData[8]);
+                $('#editVendor').val(oldRowData[5]); handleVendorChange(oldRowData[5], $('#editModel'), oldRowData[6]);
                 new bootstrap.Modal(document.getElementById('editModal')).show();
             });
 
-            // Edit Submit
             $('#editForm').on('submit', async function(e) {
                 e.preventDefault();
-                const newRow = [$('#editSiteName').val(), $('#editRoom').val(), $('#editRackId').val(), $('#editRackSize').val(), $('#editUPosition').val(), $('#editVendor').val(), $('#editModel').val(), $('#editPowerSource').val(), $('#editNotes').val()];
-                
-                // Conflict detection if moving to a new rack/u-pos
+                const newRow = [
+                    $('#editSiteName').val(), $('#editRoom').val(), $('#editRackId').val(), $('#editRackSize').val(), $('#editUPosition').val(), 
+                    $('#editVendor').val(), $('#editModel').val(), $('#editPowerSource').val(), $('#editNotes').val(), $('#editRackHeight').val()
+                ];
                 let isLocationChanged = (oldRowData[0] !== newRow[0] || oldRowData[2] !== newRow[2] || oldRowData[4] !== newRow[4]);
                 if (isLocationChanged && localCacheData.some(row => row[0] === newRow[0] && row[2] === newRow[2] && row[4] === newRow[4])) {
                     alert(`🚨 CONFLICT:\nEquipment already exists at:\nSite: ${newRow[0]}\nRack: ${newRow[2]}\nU-Pos: ${newRow[4]}`); return; 
                 }
-                
                 bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
                 showLoading("Updating Database..."); updateSyncStatus('Syncing...', 'warning', 'bi-arrow-repeat');
                 try {
@@ -832,12 +809,13 @@
                 } catch (err) { alert("Edit failed."); hideLoading(); updateSyncStatus('Offline', 'danger', 'bi-wifi-off'); }
             });
 
-            // Add Submit
             $('#dwdmForm').on('submit', async function(e) {
                 e.preventDefault();
-                const newRow = [$('#siteName').val(), $('#room').val(), $('#rackId').val(), $('#rackSize').val(), $('#uPosition').val(), $('#vendor').val(), $('#model').val(), $('#powerSource').val(), $('#notes').val()];
+                const newRow = [
+                    $('#siteName').val(), $('#room').val(), $('#rackId').val(), $('#rackSize').val(), $('#uPosition').val(), 
+                    $('#vendor').val(), $('#model').val(), $('#powerSource').val(), $('#notes').val(), $('#rackHeight').val()
+                ];
                 if (localCacheData.some(r => r[0]===newRow[0] && r[2]===newRow[2] && r[4]===newRow[4])) { alert("Conflict: Equipment exists at this U-Position."); return false; }
-                
                 bootstrap.Modal.getInstance(document.getElementById('addModal')).hide();
                 showLoading("Saving..."); updateSyncStatus('Syncing...', 'warning', 'bi-arrow-repeat');
                 try {
@@ -870,10 +848,16 @@
             $('#placeholderRack').hide(); $('#rackCanvas, #rackStatsCard').show();
             let mount = document.getElementById('rackMountSpace'); mount.innerHTML = ''; 
             
-            let used = 0; const PIXELS = 20; const TOTAL = 42;
+            let rackItems = localCacheData.filter(r => r[0]===site && r[2]===rack);
+            let maxRecordedHeight = Math.max(...rackItems.map(r => parseInt(r[9]) || 42));
+            const TOTAL = maxRecordedHeight; const PIXELS = 20;
+
+            $('#rackMountSpace').css('height', (TOTAL * PIXELS) + 'px');
+            
+            let used = 0; 
             for (let i=1; i<=TOTAL; i++) { mount.innerHTML += `<div class="rack-grid-u" style="bottom:${(i-1)*PIXELS}px"><div class="rack-label-u">${i}</div><div class="rack-label-u">${i}</div></div>`; }
 
-            localCacheData.filter(r => r[0]===site && r[2]===rack).forEach(item => {
+            rackItems.forEach(item => {
                 let pU = parseUPosition(item[4]); if(!pU) return;
                 let dStart = Math.min(Math.max(pU.startU,1), TOTAL); let dSize = pU.sizeU; if(dStart+dSize-1 > TOTAL) dSize = (TOTAL-dStart)+1;
                 used += dSize;
@@ -889,13 +873,22 @@
             $('#utilizationBar').css('width', (used/TOTAL*100)+'%').toggleClass('bg-danger', used/TOTAL>0.8).toggleClass('bg-primary', used/TOTAL<=0.8);
         }
         
-        // Theme
+        // Theme Toggle
         $('#darkModeToggle').on('click', function() {
             let html = document.documentElement; let isDark = html.getAttribute('data-bs-theme') === 'dark';
             html.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
             localStorage.setItem('theme', isDark ? 'light' : 'dark');
         });
         if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-bs-theme', 'dark');
+
+        // --- PWA SERVICE WORKER REGISTRATION ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered', reg))
+                    .catch(err => console.error('Service Worker registration failed', err));
+            });
+        }
     </script>
 </body>
 </html>
