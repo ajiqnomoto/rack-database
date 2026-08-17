@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rackbase - AI Intelligence</title>
+    <title>OptiTrack - AI Intelligence</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -150,7 +150,7 @@
         <div class="sidebar-brand">
             <div class="bg-light text-primary rounded p-1 me-2"><i class="bi bi-activity"></i></div>
             <div>
-                <h4>Rackbase</h4>
+                <h4>OptiTrack</h4>
                 <span>AI INTELLIGENCE</span>
             </div>
         </div>
@@ -342,7 +342,7 @@
 
                 </div>
 
-                <!-- TAB 2: RACK VISUALIZER (Clean Selection & Elevation View Only) -->
+                <!-- TAB 2: RACK VISUALIZER -->
                 <div class="tab-pane fade" id="visualizer" role="tabpanel">
                     <div class="visualizer-container">
                         <div class="vis-controls">
@@ -384,7 +384,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: RACK DATABASE (Pure Table & Add Equipment Flow) -->
+                <!-- TAB 3: RACK DATABASE -->
                 <div class="tab-pane fade" id="database" role="tabpanel">
                     <div class="table-responsive">
                         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -552,13 +552,24 @@
         // Clock
         setInterval(() => { document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
 
-        // Tab Switcher
+        // --- FIXED TAB SWITCHER ---
         function switchTab(tabId, element) {
+            // Update Sidebar Highlights
             $('.menu-link').removeClass('active'); 
             if(element) $(element).addClass('active');
+            
+            // Update Header Title
             let titles = { 'overview':'Rack Overview', 'database':'Rack Database', 'visualizer':'Rack Visualizer'};
             $('#headerPageTitle').text(titles[tabId]);
-            new bootstrap.Tab(document.getElementById(tabId)).show();
+            
+            // Switch Tab Panes Manually
+            $('.tab-pane').removeClass('show active');
+            $('#' + tabId).addClass('show active');
+
+            // Force DataTable to resize columns properly if opening the Database tab
+            if (tabId === 'database' && dataTable) {
+                setTimeout(() => { dataTable.columns.adjust(); }, 150);
+            }
         }
 
         // ==========================================
@@ -573,7 +584,7 @@
         function hideLoading() { $('#loadingOverlay').hide(); }
         function updateSyncStatus(status, color, icon) { $('#syncStatus').html(`<i class="bi ${icon} me-2 text-${color}"></i> ${status}`); }
 
-        // Parse U Position Logic
+        // Parse U Position Logic (Includes fix for integers)
         function parseUPosition(uString) {
             let m = String(uString).match(/[uU]?(\d+)(?:\s*-\s*[uU]?(\d+))?/); 
             if(!m) return null;
@@ -759,6 +770,9 @@
                     this.reset(); $('#model').empty().append(new Option("Select Vendor first...", ""));
                     updateDashboard(localCacheData); populateVisualizerSites();
                     hideLoading(); updateSyncStatus('Live Sync', 'success', 'bi-circle-fill');
+                    
+                    // Switch back to database tab to show new entry
+                    switchTab('database', $('.menu-link:contains(\'Rack Database\')'));
                 } catch (err) { alert("Sync failed."); hideLoading(); updateSyncStatus('Offline', 'danger', 'bi-wifi-off'); }
             });
         });
