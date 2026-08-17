@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OptiTrack - AI Intelligence</title>
+    <title>RackTrack - AI Intelligence</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -128,19 +128,50 @@
         .vendor-ciena { background-color: #e4a11b; color: #1a1a1a; }
         .vendor-infinera { background-color: #14a44d; color: white; }
         
-        /* Rack Visualizer specific */
-        .visualizer-container { display: flex; gap: 40px; flex-wrap: wrap; }
+        /* --- RACK VISUALIZER SPECIFIC --- */
+        .visualizer-container { display: flex; gap: 30px; flex-wrap: wrap; }
         .vis-controls { flex: 1; min-width: 300px; }
-        .vis-canvas-area { flex: 2; display: flex; justify-content: center; min-width: 350px; background: #1a1a1a; padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); }
-        .rack-cabinet { width: 340px; height: 840px; background-color: #111; border: 12px solid #2d3436; border-radius: 8px; position: relative; box-shadow: inset 0 0 20px #000, 10px 10px 30px rgba(0,0,0,0.3); display: flex; justify-content: center; }
-        .rack-rail { width: 20px; height: 100%; background: #34495e; position: absolute; top: 0; z-index: 2; border-left: 1px solid #4a5c6e; border-right: 1px solid #2c3e50; background-image: radial-gradient(#111 2px, transparent 3px); background-size: 100% 20px; }
+        .vis-canvas-area { 
+            flex: 2; display: flex; justify-content: center; min-width: 350px; 
+            background: var(--bg-card); padding: 30px; border-radius: 12px; 
+            border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.02); 
+            position: relative;
+        }
+        .rack-cabinet { 
+            width: 340px; height: 840px; background-color: #1e293b; 
+            border: 12px solid #334155; border-radius: 8px; position: relative; 
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.15); 
+            display: flex; justify-content: center; 
+        }
+        .rack-rail { 
+            width: 20px; height: 100%; background: #475569; position: absolute; top: 0; z-index: 2; 
+            border-left: 1px solid #64748b; border-right: 1px solid #1e293b; 
+            background-image: radial-gradient(#0f172a 2px, transparent 3px); background-size: 100% 20px; 
+        }
         .rack-rail.left { left: 0; } .rack-rail.right { right: 0; }
         .rack-mount-space { width: 276px; height: 100%; position: relative; z-index: 5; }
-        .rack-grid-u { width: 100%; height: 20px; position: absolute; box-sizing: border-box; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; }
+        .rack-grid-u { 
+            width: 100%; height: 20px; position: absolute; box-sizing: border-box; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; 
+        }
         .rack-grid-u:nth-child(even) { background-color: rgba(255,255,255,0.02); }
-        .rack-label-u { color: #636e72; font-size: 10px; font-weight: 700; width: 20px; text-align: center; }
-        .rack-equipment { position: absolute; width: 100%; left: 0; box-sizing: border-box; border: 2px solid rgba(0,0,0,0.6); border-radius: 2px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; font-weight: 700; overflow: hidden; text-align: center; cursor: pointer; text-shadow: 0px 1px 2px rgba(0,0,0,0.8); box-shadow: inset 0 2px 10px rgba(255,255,255,0.2); color: white;}
+        .rack-label-u { color: #94a3b8; font-size: 10px; font-weight: 700; width: 20px; text-align: center; }
+        .rack-equipment { 
+            position: absolute; width: 100%; left: 0; box-sizing: border-box; 
+            border: 2px solid rgba(0,0,0,0.6); border-radius: 2px; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; font-size: 12px; font-weight: 700; overflow: hidden; 
+            text-align: center; cursor: pointer; text-shadow: 0px 1px 2px rgba(0,0,0,0.8); 
+            box-shadow: inset 0 2px 10px rgba(255,255,255,0.2); color: white;
+            transition: transform 0.1s ease; 
+        }
         .tooltip-inner { text-align: left; max-width: 250px; padding: 10px; border-radius: 8px; }
+        #placeholderRack {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+
+        /* Database Toolbar */
+        .db-toolbar { display: flex; gap: 10px; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -150,7 +181,7 @@
         <div class="sidebar-brand">
             <div class="bg-light text-primary rounded p-1 me-2"><i class="bi bi-activity"></i></div>
             <div>
-                <h4>OptiTrack</h4>
+                <h4>RackTrack</h4>
                 <span>AI INTELLIGENCE</span>
             </div>
         </div>
@@ -201,7 +232,6 @@
                 <!-- TAB 1: RACK OVERVIEW -->
                 <div class="tab-pane fade show active" id="overview" role="tabpanel">
                     
-                    <!-- AI Insight Banner -->
                     <div class="ai-banner">
                         <div class="d-flex align-items-center gap-3">
                             <div class="icon-box"><i class="bi bi-cpu"></i></div>
@@ -216,34 +246,15 @@
 
                     <div class="kpi-section-title">Key Performance Indicators</div>
                     
-                    <!-- KPI 3-Column Layout -->
                     <div class="row g-4 mb-4">
-                        
-                        <!-- Col 1: Infrastructure Overview -->
                         <div class="col-xl-4 col-lg-6">
                             <div class="kpi-main-card">
                                 <h5><i class="bi bi-hdd-network text-primary"></i> INFRASTRUCTURE OVERVIEW</h5>
                                 <div class="mini-kpi-grid">
-                                    <div class="mini-kpi b-cyan">
-                                        <div class="title">Total Equip</div>
-                                        <div class="value" id="kTotalEq">0</div>
-                                        <div class="sub-text text-primary">Installed</div>
-                                    </div>
-                                    <div class="mini-kpi b-green">
-                                        <div class="title">Active Sites</div>
-                                        <div class="value" id="kActiveSites">0</div>
-                                        <div class="sub-text text-success">100% online</div>
-                                    </div>
-                                    <div class="mini-kpi b-orange">
-                                        <div class="title">Total Racks</div>
-                                        <div class="value" id="kTotalRacks">0</div>
-                                        <div class="sub-text text-warning">Tracked</div>
-                                    </div>
-                                    <div class="mini-kpi b-red w-100">
-                                        <div class="title">Data Conflicts</div>
-                                        <div class="value text-danger">0</div>
-                                        <div class="sub-text text-danger">Resolved</div>
-                                    </div>
+                                    <div class="mini-kpi b-cyan"><div class="title">Total Equip</div><div class="value" id="kTotalEq">0</div><div class="sub-text text-primary">Installed</div></div>
+                                    <div class="mini-kpi b-green"><div class="title">Active Sites</div><div class="value" id="kActiveSites">0</div><div class="sub-text text-success">100% online</div></div>
+                                    <div class="mini-kpi b-orange"><div class="title">Total Racks</div><div class="value" id="kTotalRacks">0</div><div class="sub-text text-warning">Tracked</div></div>
+                                    <div class="mini-kpi b-red w-100"><div class="title">Data Conflicts</div><div class="value text-danger">0</div><div class="sub-text text-danger">Resolved</div></div>
                                 </div>
                                 <div class="kpi-dark-footer mt-auto">
                                     <div class="dark-stat"><div class="val" id="kPwrAC">0</div><div class="lbl">AC Power</div><div class="pill">Active</div></div>
@@ -253,26 +264,13 @@
                             </div>
                         </div>
 
-                        <!-- Col 2: Vendor Distribution -->
                         <div class="col-xl-4 col-lg-6">
                             <div class="kpi-main-card">
                                 <h5><i class="bi bi-cpu text-success"></i> VENDOR DEPLOYMENTS</h5>
                                 <div class="mini-kpi-grid">
-                                    <div class="mini-kpi b-cyan">
-                                        <div class="title">Total Vendors</div>
-                                        <div class="value" id="kVendors">0</div>
-                                        <div class="sub-text text-primary">Partners</div>
-                                    </div>
-                                    <div class="mini-kpi b-green">
-                                        <div class="title">Nokia Equip</div>
-                                        <div class="value" id="kNokia">0</div>
-                                        <div class="sub-text text-success">Active</div>
-                                    </div>
-                                    <div class="mini-kpi b-orange">
-                                        <div class="title">Huawei Equip</div>
-                                        <div class="value" id="kHuawei">0</div>
-                                        <div class="sub-text text-warning">Active</div>
-                                    </div>
+                                    <div class="mini-kpi b-cyan"><div class="title">Total Vendors</div><div class="value" id="kVendors">0</div><div class="sub-text text-primary">Partners</div></div>
+                                    <div class="mini-kpi b-green"><div class="title">Nokia Equip</div><div class="value" id="kNokia">0</div><div class="sub-text text-success">Active</div></div>
+                                    <div class="mini-kpi b-orange"><div class="title">Huawei Equip</div><div class="value" id="kHuawei">0</div><div class="sub-text text-warning">Active</div></div>
                                 </div>
                                 <div class="kpi-dark-footer mt-auto">
                                     <div class="dark-stat"><div class="val" id="kCiena">0</div><div class="lbl">Ciena Nodes</div></div>
@@ -282,26 +280,13 @@
                             </div>
                         </div>
 
-                        <!-- Col 3: Rack Capacity -->
                         <div class="col-xl-4 col-lg-6">
                             <div class="kpi-main-card">
                                 <h5><i class="bi bi-server text-warning"></i> CAPACITY TRACKER</h5>
                                 <div class="mini-kpi-grid">
-                                    <div class="mini-kpi b-cyan">
-                                        <div class="title">Total U-Space</div>
-                                        <div class="value" id="kTotalU">0</div>
-                                        <div class="sub-text text-primary">Max Scale</div>
-                                    </div>
-                                    <div class="mini-kpi b-green">
-                                        <div class="title">Utilized U</div>
-                                        <div class="value" id="kUsedU">0</div>
-                                        <div class="sub-text text-success">Occupied</div>
-                                    </div>
-                                    <div class="mini-kpi b-red w-100">
-                                        <div class="title">Critical Racks</div>
-                                        <div class="value text-danger" id="kCritRacks">0</div>
-                                        <div class="sub-text text-danger">> 80% Capacity</div>
-                                    </div>
+                                    <div class="mini-kpi b-cyan"><div class="title">Total U-Space</div><div class="value" id="kTotalU">0</div><div class="sub-text text-primary">Max Scale</div></div>
+                                    <div class="mini-kpi b-green"><div class="title">Utilized U</div><div class="value" id="kUsedU">0</div><div class="sub-text text-success">Occupied</div></div>
+                                    <div class="mini-kpi b-red w-100"><div class="title">Critical Racks</div><div class="value text-danger" id="kCritRacks">0</div><div class="sub-text text-danger">> 80% Capacity</div></div>
                                 </div>
                                 <div class="kpi-dark-footer mt-auto">
                                     <div class="dark-stat"><div class="val" id="k19in">0</div><div class="lbl">19" EIA</div></div>
@@ -309,12 +294,10 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
 
                     <div class="kpi-section-title">Distribution & Breakdown</div>
                     
-                    <!-- Charts Row -->
                     <div class="row g-4 mb-4">
                         <div class="col-lg-6">
                             <div class="chart-card">
@@ -322,9 +305,7 @@
                                     <h5 class="mb-0 fw-bold" style="font-size: 0.9rem;"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Equipment by Site</h5>
                                     <span class="badge bg-light text-primary border">Live</span>
                                 </div>
-                                <div class="chart-container">
-                                    <canvas id="siteChart"></canvas>
-                                </div>
+                                <div class="chart-container"><canvas id="siteChart"></canvas></div>
                             </div>
                         </div>
                         <div class="col-lg-6">
@@ -333,9 +314,7 @@
                                     <h5 class="mb-0 fw-bold" style="font-size: 0.9rem;"><i class="bi bi-pie-chart-fill text-success me-2"></i>Vendor Breakdown</h5>
                                     <span class="badge bg-light text-primary border">Live</span>
                                 </div>
-                                <div class="chart-container">
-                                    <canvas id="vendorChart"></canvas>
-                                </div>
+                                <div class="chart-container"><canvas id="vendorChart"></canvas></div>
                             </div>
                         </div>
                     </div>
@@ -347,7 +326,7 @@
                     <div class="visualizer-container">
                         <div class="vis-controls">
                             <div class="chart-card mb-4">
-                                <h5 class="fw-bold mb-3"><i class="bi bi-search text-primary me-2"></i>Select Rack</h5>
+                                <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-search me-2"></i>Select Rack</h5>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">Site</label>
                                     <select class="form-select" id="visSiteSelect">
@@ -370,10 +349,11 @@
                                 <div class="progress mt-4" style="height: 10px;"><div id="utilizationBar" class="progress-bar bg-primary" style="width: 0%"></div></div>
                             </div>
                         </div>
+                        
+                        <!-- Canvas Area -->
                         <div class="vis-canvas-area">
-                            <div id="placeholderRack" class="text-muted d-flex flex-column align-items-center justify-content-center h-100">
-                                <i class="bi bi-server" style="font-size: 4rem; opacity: 0.2;"></i>
-                                <p class="mt-3 fw-medium text-white-50">Select a Site and Rack ID to generate elevation view</p>
+                            <div id="placeholderRack">
+                                <i class="bi bi-server text-muted" style="font-size: 7rem; opacity: 0.15;"></i>
                             </div>
                             <div class="rack-cabinet" id="rackCanvas" style="display: none;">
                                 <div class="rack-rail left"></div>
@@ -387,13 +367,41 @@
                 <!-- TAB 3: RACK DATABASE -->
                 <div class="tab-pane fade" id="database" role="tabpanel">
                     <div class="table-responsive">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
+                        
+                        <!-- Dynamic Filters and Add Button Header -->
+                        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                             <div>
                                 <h5 class="fw-bold m-0"><i class="bi bi-database me-2 text-primary"></i>Rack Database</h5>
                                 <p class="text-muted small mb-0">Master Layer 1 & 2 Infrastructure Repository</p>
                             </div>
-                            <button class="btn-custom-primary" data-bs-toggle="modal" data-bs-target="#addModal"><i class="bi bi-plus-lg me-1"></i> Add Equipment</button>
+                            <div class="db-toolbar">
+                                <select id="dbFilterSite" class="form-select form-select-sm shadow-sm" style="min-width: 150px;">
+                                    <option value="">All Sites</option>
+                                    <option value="AIMS CYBERJAYA">AIMS CYBERJAYA</option>
+                                    <option value="CX2">CX2</option>
+                                    <option value="CSF">CSF</option>
+                                    <option value="NTT">NTT</option>
+                                    <option value="KVDC">KVDC</option>
+                                    <option value="AIMS KL">AIMS KL</option>
+                                    <option value="CX5">CX5</option>
+                                    <option value="IPDC">IPDC</option>
+                                    <option value="ANSAR">ANSAR</option>
+                                    <option value="NCC KL">NCC KL</option>
+                                </select>
+                                <select id="dbFilterVendor" class="form-select form-select-sm shadow-sm" style="min-width: 150px;">
+                                    <option value="">All Vendors</option>
+                                    <option value="Nokia">Nokia</option>
+                                    <option value="Huawei">Huawei</option>
+                                    <option value="Ciena">Ciena</option>
+                                    <option value="Infinera">Infinera</option>
+                                    <option value="BTI">BTI</option>
+                                    <option value="Juniper">Juniper</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                                <button class="btn-custom-primary ms-2" data-bs-toggle="modal" data-bs-target="#addModal"><i class="bi bi-plus-lg me-1"></i> Add Equipment</button>
+                            </div>
                         </div>
+
                         <table id="dwdmTable" class="table table-hover align-middle">
                             <thead>
                                 <tr>
@@ -437,26 +445,31 @@
                             <option value="NCC KL">NCC KL</option>
                         </select>
                     </div>
+                    
+                    <!-- Dynamic Datalist for Room -->
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Room</label>
-                        <select class="form-select" id="room" required>
-                            <option value="" disabled selected>Select Room...</option>
-                            <option value="MMR 1">MMR 1</option><option value="MMR 2">MMR 2</option>
-                            <option value="Telco Room 1">Telco Room 1</option><option value="Telco Room 2">Telco Room 2</option>
-                            <option value="Data Hall 1">Data Hall 1</option><option value="Data Hall 2">Data Hall 2</option>
-                            <option value="Basement">Basement</option><option value="Roof / ODF">Roof / ODF</option>
-                            <option value="Staging Area">Staging Area</option><option value="Other">Other...</option>
-                        </select>
+                        <input type="text" class="form-control" id="room" list="roomOptions" placeholder="Select or type new..." required>
+                        <datalist id="roomOptions"></datalist>
                     </div>
+
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Power Source</label>
                         <select class="form-select" id="powerSource" required>
                             <option value="AC Power">AC Power</option><option value="DC Power">DC Power</option>
                         </select>
                     </div>
-                    <div class="col-md-4"><label class="form-label small fw-bold">Rack ID</label><input type="text" class="form-control" id="rackId" placeholder="e.g. R-12" required></div>
+
+                    <!-- Dynamic Datalist for Rack ID -->
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Rack ID</label>
+                        <input type="text" class="form-control" id="rackId" list="rackOptions" placeholder="Select or type new..." required>
+                        <datalist id="rackOptions"></datalist>
+                    </div>
+
                     <div class="col-md-4"><label class="form-label small fw-bold">Rack Size</label><select class="form-select" id="rackSize" required><option value="19 inch">19 inch (EIA)</option><option value="21 inch">21 inch (ETSI)</option></select></div>
                     <div class="col-md-4"><label class="form-label small fw-bold">U-Position</label><input type="text" class="form-control" id="uPosition" placeholder="e.g. U10-U12" pattern="^[Uu]?[1-9][0-9]?(\s*-\s*[Uu]?[1-9][0-9]?)?$" title="Format: U1 or U10-U12" required></div>
+                    
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Vendor</label>
                         <select class="form-select" id="vendor" required>
@@ -506,20 +519,26 @@
                             <option value="NCC KL">NCC KL</option>
                         </select>
                     </div>
+
+                    <!-- Dynamic Datalist for Edit Room -->
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Room</label>
-                        <select class="form-select" id="editRoom" required>
-                            <option value="MMR 1">MMR 1</option><option value="MMR 2">MMR 2</option>
-                            <option value="Telco Room 1">Telco Room 1</option><option value="Telco Room 2">Telco Room 2</option>
-                            <option value="Data Hall 1">Data Hall 1</option><option value="Data Hall 2">Data Hall 2</option>
-                            <option value="Basement">Basement</option><option value="Roof / ODF">Roof / ODF</option>
-                            <option value="Staging Area">Staging Area</option><option value="Other">Other...</option>
-                        </select>
+                        <input type="text" class="form-control" id="editRoom" list="editRoomOptions" placeholder="Select or type new..." required>
+                        <datalist id="editRoomOptions"></datalist>
                     </div>
+
                     <div class="col-md-4"><label class="form-label small fw-bold">Power Source</label><select class="form-select" id="editPowerSource" required><option value="AC Power">AC Power</option><option value="DC Power">DC Power</option></select></div>
-                    <div class="col-md-4"><label class="form-label small fw-bold">Rack ID</label><input type="text" class="form-control" id="editRackId" required></div>
+                    
+                    <!-- Dynamic Datalist for Edit Rack ID -->
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Rack ID</label>
+                        <input type="text" class="form-control" id="editRackId" list="editRackOptions" placeholder="Select or type new..." required>
+                        <datalist id="editRackOptions"></datalist>
+                    </div>
+
                     <div class="col-md-4"><label class="form-label small fw-bold">Rack Size</label><select class="form-select" id="editRackSize" required><option value="19 inch">19 inch</option><option value="21 inch">21 inch</option></select></div>
                     <div class="col-md-4"><label class="form-label small fw-bold">U-Position</label><input type="text" class="form-control" id="editUPosition" pattern="^[Uu]?[1-9][0-9]?(\s*-\s*[Uu]?[1-9][0-9]?)?$" required></div>
+                    
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Vendor</label>
                         <select class="form-select" id="editVendor" required>
@@ -549,24 +568,20 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
     <script>
-        // Clock
+        // Clock Update
         setInterval(() => { document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
 
         // --- FIXED TAB SWITCHER ---
         function switchTab(tabId, element) {
-            // Update Sidebar Highlights
             $('.menu-link').removeClass('active'); 
             if(element) $(element).addClass('active');
             
-            // Update Header Title
             let titles = { 'overview':'Rack Overview', 'database':'Rack Database', 'visualizer':'Rack Visualizer'};
             $('#headerPageTitle').text(titles[tabId]);
             
-            // Switch Tab Panes Manually
             $('.tab-pane').removeClass('show active');
             $('#' + tabId).addClass('show active');
 
-            // Force DataTable to resize columns properly if opening the Database tab
             if (tabId === 'database' && dataTable) {
                 setTimeout(() => { dataTable.columns.adjust(); }, 150);
             }
@@ -584,7 +599,6 @@
         function hideLoading() { $('#loadingOverlay').hide(); }
         function updateSyncStatus(status, color, icon) { $('#syncStatus').html(`<i class="bi ${icon} me-2 text-${color}"></i> ${status}`); }
 
-        // Parse U Position Logic (Includes fix for integers)
         function parseUPosition(uString) {
             let m = String(uString).match(/[uU]?(\d+)(?:\s*-\s*[uU]?(\d+))?/); 
             if(!m) return null;
@@ -702,6 +716,25 @@
             if(def) $el.val(def);
         }
 
+        // --- POPULATE DATALISTS DYNAMICALLY ---
+        function updateFormDatalists(siteValue, roomListId, rackListId) {
+            const $roomList = $('#' + roomListId);
+            const $rackList = $('#' + rackListId);
+            $roomList.empty();
+            $rackList.empty();
+            
+            if(!siteValue) return;
+
+            const siteData = localCacheData.filter(r => r[0] === siteValue);
+            const uniqueRooms = [...new Set(siteData.map(r => r[1]))].sort();
+            const uniqueRacks = [...new Set(siteData.map(r => r[2]))].sort();
+
+            uniqueRooms.forEach(room => $roomList.append(new Option(room)));
+            uniqueRacks.forEach(rack => $rackList.append(new Option(rack)));
+        }
+
+
+        // --- DOCUMENT READY ---
         $(document).ready(function() {
             dataTable = $('#dwdmTable').DataTable({
                 data: [], pageLength: 15,
@@ -722,21 +755,45 @@
             fetchDataFromSheet(false);
             setInterval(() => { fetchDataFromSheet(true); }, 300000);
 
+            // Database Filters Binding
+            $('#dbFilterSite').on('change', function() { dataTable.column(0).search(this.value).draw(); });
+            $('#dbFilterVendor').on('change', function() { dataTable.column(5).search(this.value).draw(); });
+
             $('#vendor').on('change', function() { handleVendorChange($(this).val(), $('#model')); });
             $('#editVendor').on('change', function() { handleVendorChange($(this).val(), $('#editModel')); });
             $('#rackId, #editRackId').on('input', function() { $(this).val($(this).val().toUpperCase()); });
 
+            // Dynamic Datalist triggers
             $('#siteName').on('change', function() {
-                let m = localCacheData.find(r => r[0] === $(this).val());
+                let siteVal = $(this).val();
+                updateFormDatalists(siteVal, 'roomOptions', 'rackOptions');
+                let m = localCacheData.find(r => r[0] === siteVal);
                 if(m) { $('#powerSource').val(m[7]); }
+            });
+
+            $('#editSiteName').on('change', function() {
+                let siteVal = $(this).val();
+                updateFormDatalists(siteVal, 'editRoomOptions', 'editRackOptions');
             });
 
             // Edit Trigger
             $('#dwdmTable tbody').on('click', '.btn-edit', function () {
                 editingDtRow = dataTable.row($(this).parents('tr')); oldRowData = editingDtRow.data();
-                $('#editSiteName').val(oldRowData[0]); $('#editRoom').val(oldRowData[1]); $('#editRackId').val(oldRowData[2]); $('#editRackSize').val(oldRowData[3]);
-                $('#editUPosition').val(oldRowData[4]); $('#editPowerSource').val(oldRowData[7]); $('#editNotes').val(oldRowData[8]);
-                $('#editVendor').val(oldRowData[5]); handleVendorChange(oldRowData[5], $('#editModel'), oldRowData[6]);
+                
+                $('#editSiteName').val(oldRowData[0]); 
+                // Populate datalists BEFORE setting the values
+                updateFormDatalists(oldRowData[0], 'editRoomOptions', 'editRackOptions');
+                
+                $('#editRoom').val(oldRowData[1]); 
+                $('#editRackId').val(oldRowData[2]); 
+                $('#editRackSize').val(oldRowData[3]);
+                $('#editUPosition').val(oldRowData[4]); 
+                $('#editPowerSource').val(oldRowData[7]); 
+                $('#editNotes').val(oldRowData[8]);
+                
+                $('#editVendor').val(oldRowData[5]); 
+                handleVendorChange(oldRowData[5], $('#editModel'), oldRowData[6]);
+                
                 new bootstrap.Modal(document.getElementById('editModal')).show();
             });
 
@@ -744,6 +801,13 @@
             $('#editForm').on('submit', async function(e) {
                 e.preventDefault();
                 const newRow = [$('#editSiteName').val(), $('#editRoom').val(), $('#editRackId').val(), $('#editRackSize').val(), $('#editUPosition').val(), $('#editVendor').val(), $('#editModel').val(), $('#editPowerSource').val(), $('#editNotes').val()];
+                
+                // Conflict detection if moving to a new rack/u-pos
+                let isLocationChanged = (oldRowData[0] !== newRow[0] || oldRowData[2] !== newRow[2] || oldRowData[4] !== newRow[4]);
+                if (isLocationChanged && localCacheData.some(row => row[0] === newRow[0] && row[2] === newRow[2] && row[4] === newRow[4])) {
+                    alert(`🚨 CONFLICT:\nEquipment already exists at:\nSite: ${newRow[0]}\nRack: ${newRow[2]}\nU-Pos: ${newRow[4]}`); return; 
+                }
+                
                 bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
                 showLoading("Updating Database..."); updateSyncStatus('Syncing...', 'warning', 'bi-arrow-repeat');
                 try {
@@ -770,9 +834,6 @@
                     this.reset(); $('#model').empty().append(new Option("Select Vendor first...", ""));
                     updateDashboard(localCacheData); populateVisualizerSites();
                     hideLoading(); updateSyncStatus('Live Sync', 'success', 'bi-circle-fill');
-                    
-                    // Switch back to database tab to show new entry
-                    switchTab('database', $('.menu-link:contains(\'Rack Database\')'));
                 } catch (err) { alert("Sync failed."); hideLoading(); updateSyncStatus('Offline', 'danger', 'bi-wifi-off'); }
             });
         });
