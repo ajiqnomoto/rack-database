@@ -1,19 +1,19 @@
 {
-  "name": "OptiTrack DWDM Manager",
-  "short_name": "OptiTrack",
+  "name": "RackTrack - AI Intelligence",
+  "short_name": "RackTrack",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#0a2540",
-  "theme_color": "#0a2540",
-  "description": "Layer 1 & 2 Infrastructure Management Dashboard",
+  "background_color": "#ffffff",
+  "theme_color": "#008b8b",
+  "description": "Layer 1 & 2 Infrastructure Performance Dashboard",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2885/2885417.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2885/2885417.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
