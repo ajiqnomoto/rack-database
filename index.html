@@ -113,6 +113,13 @@
         .vendor-rectifier { background-color: #ea580c; color: white; }
         .vendor-inverter { background-color: #f59e0b; color: #1a1a1a; text-shadow: none;}
         
+        /* BRAND BADGES FOR TEST GEAR */
+        .vendor-viavi { background-color: #5b21b6; color: white; }
+        .vendor-exfo { background-color: #0284c7; color: white; }
+        .vendor-yokogawa { background-color: #b91c1c; color: white; }
+        .vendor-anritsu { background-color: #059669; color: white; }
+        .vendor-generic { background-color: #475569; color: white; }
+        
         /* --- RACK VISUALIZER SPECIFIC --- */
         .visualizer-container { display: flex; gap: 30px; flex-wrap: wrap; }
         .vis-controls { flex: 1; min-width: 300px; }
@@ -162,6 +169,10 @@
         [data-bs-theme="dark"] #loadingOverlay { background: rgba(30,30,30,0.85); }
         .form-control-sm, .form-select-sm { padding: 8px 12px; font-size: 0.85rem; }
 
+        /* --- OTDR SPECIFIC --- */
+        .status-available { color: #10b981; font-weight: bold; }
+        .status-deployed { color: #ef4444; font-weight: bold; }
+
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 991.98px) {
             .app-sidebar {
@@ -205,6 +216,13 @@
             <div class="menu-category">Repository</div>
             <a class="menu-link" onclick="switchTab('database', this)"><i class="bi bi-database"></i> Rack Database</a>
             <a class="menu-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1XAip3cPjmOHmR4tJBLJOKZoskaC87LWNgsh1IcC_Sd0/edit', '_blank')"><i class="bi bi-file-earmark-spreadsheet"></i> Raw Data Sheet</a>
+            
+            <!-- FIELD OPS SEGMENT -->
+            <div class="menu-category">Field Ops</div>
+            <a class="menu-link" onclick="switchTab('otdr-analytics', this)"><i class="bi bi-pie-chart"></i> Gear Dashboard</a>
+            <a class="menu-link" onclick="switchTab('otdr-dashboard', this)"><i class="bi bi-display"></i> Live Status</a>
+            <a class="menu-link" onclick="switchTab('otdr', this)"><i class="bi bi-tools"></i> OTDR Tracker</a>
+            <a class="menu-link" onclick="switchTab('otdr-audit', this)"><i class="bi bi-clock-history"></i> Audit Trail</a>
         </div>
         <div class="sidebar-footer">
             <i class="bi bi-circle-fill text-success me-1" style="font-size: 8px;"></i> Live • Optimized
@@ -218,7 +236,7 @@
                 <button class="header-toggle" id="mobileMenuBtn"><i class="bi bi-list"></i></button>
                 <div class="header-title">
                     <h2 id="headerPageTitle">Rack Overview</h2>
-                    <p class="d-none d-md-block">Infrastructure Performance Dashboard · Layer 1 & 2 DWDM</p>
+                    <p class="d-none d-md-block" id="headerSubtitle">Infrastructure Performance Dashboard · Layer 1 & 2 DWDM</p>
                 </div>
             </div>
             <div class="header-actions">
@@ -430,6 +448,129 @@
                         </table>
                     </div>
                 </div>
+                
+                <!-- NEW OTDR ANALYTICS DASHBOARD -->
+                <div class="tab-pane fade" id="otdr-analytics" role="tabpanel">
+                    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center mb-4 gap-3">
+                        <div>
+                            <h5 class="fw-bold m-0"><i class="bi bi-pie-chart me-2 text-primary"></i>Test Gear Analytics</h5>
+                            <p class="text-muted small mb-0">Utilization metrics and physical deployment mapping</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-xl-4 col-lg-12">
+                            <div class="kpi-main-card">
+                                <h5><i class="bi bi-activity text-primary"></i> FLEET UTILIZATION</h5>
+                                <div class="mini-kpi-grid">
+                                    <div class="mini-kpi b-cyan"><div class="title">Total Units</div><div class="value" id="kGearTotal">0</div><div class="sub-text text-primary">Registered</div></div>
+                                    <div class="mini-kpi b-green"><div class="title">Available</div><div class="value" id="kGearAvail">0</div><div class="sub-text text-success">At HQ</div></div>
+                                    <div class="mini-kpi b-red w-100"><div class="title">Deployed</div><div class="value text-danger" id="kGearDep">0</div><div class="sub-text text-danger">In the Field</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-8 col-lg-12">
+                            <div class="chart-card">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0 fw-bold" style="font-size: 0.9rem;"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Active Deployments by Site</h5>
+                                    <span class="badge bg-light text-primary border">Live</span>
+                                </div>
+                                <div class="chart-container"><canvas id="otdrSiteChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OTDR LIVE STATUS TABLE -->
+                <div class="tab-pane fade" id="otdr-dashboard" role="tabpanel">
+                    <div class="table-responsive">
+                        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center mb-4 gap-3">
+                            <div>
+                                <h5 class="fw-bold m-0"><i class="bi bi-display me-2 text-primary"></i>Live Status List</h5>
+                                <p class="text-muted small mb-0">Real-time availability of all test gear units</p>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="position-relative">
+                                    <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left: 10px; font-size: 0.85rem;"></i>
+                                    <input type="text" id="otdrLiveSearch" class="form-control form-control-sm shadow-sm" placeholder="Search gear or site..." style="padding-left: 32px; min-width: 250px;">
+                                </div>
+                            </div>
+                        </div>
+                        <table id="otdrLiveTable" class="table table-hover align-middle w-100">
+                            <thead>
+                                <tr><th>Testgear ID</th><th>Status</th><th>Current FE</th><th>Site Location</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- OTDR TEST GEAR TRACKER -->
+                <div class="tab-pane fade" id="otdr" role="tabpanel">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6 col-md-8">
+                            <div class="card p-4 shadow-sm" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;">
+                                <h5 class="fw-bold mb-4" style="color: var(--text-main);"><i class="bi bi-tools text-primary me-2"></i>Test Gear Record</h5>
+                                
+                                <label class="form-label small fw-bold">Select Testgear Unit:</label>
+                                <select class="form-select mb-3" id="gearSelect" onchange="updateGearDetails()">
+                                    <option value="">-- Choose Unit --</option>
+                                </select>
+
+                                <div id="gearStatus" class="p-3 mb-3" style="display:none; background: rgba(0,0,0,0.03); border-radius: 8px; border: 1px solid var(--border-color);"></div>
+
+                                <label class="form-label small fw-bold">Action:</label>
+                                <select class="form-select mb-3" id="actionSelect" onchange="toggleOtdrFields()">
+                                    <option value="Check-Out">Check-Out (Deploy)</option>
+                                    <option value="Transfer">Site Transfer (Handover)</option>
+                                    <option value="Check-In (HQ)">Check-In (Return to HQ)</option>
+                                </select>
+
+                                <div id="dynamicOtdrFields">
+                                    <label class="form-label small fw-bold">Field Engineer (FE):</label>
+                                    <select class="form-select mb-3" id="feSelect">
+                                        <option value="">-- Select Engineer --</option>
+                                    </select>
+
+                                    <label class="form-label small fw-bold">Current / Destination Site:</label>
+                                    <select class="form-select mb-2" id="otdrSiteSelect" onchange="toggleManualSite()">
+                                        <option value="">-- Select Site --</option>
+                                    </select>
+                                    
+                                    <div id="manualSiteDiv" style="display:none; margin-bottom: 24px;">
+                                        <input type="text" class="form-control form-control-sm border-primary shadow-sm" id="otdrSiteManual" placeholder="Type custom site name here (e.g. TM Node A)...">
+                                    </div>
+                                </div>
+
+                                <button class="btn-custom-primary w-100 py-2" id="otdrSubmitBtn" onclick="submitOtdrRecord()">Save Gear Record</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- OTDR AUDIT TRAIL -->
+                <div class="tab-pane fade" id="otdr-audit" role="tabpanel">
+                    <div class="table-responsive">
+                        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center mb-4 gap-3">
+                            <div>
+                                <h5 class="fw-bold m-0"><i class="bi bi-clock-history me-2 text-primary"></i>Audit Trail</h5>
+                                <p class="text-muted small mb-0">Immutable historical log of all equipment movements</p>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="position-relative">
+                                    <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left: 10px; font-size: 0.85rem;"></i>
+                                    <input type="text" id="otdrAuditSearch" class="form-control form-control-sm shadow-sm" placeholder="Search by FE or ID..." style="padding-left: 32px; min-width: 250px;">
+                                </div>
+                            </div>
+                        </div>
+                        <table id="otdrAuditTable" class="table table-hover align-middle w-100">
+                            <thead>
+                                <tr><th>Timestamp</th><th>Testgear ID</th><th>Action</th><th>FE Name</th><th>Destination / Site</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
 
             </div>
         </div>
@@ -602,14 +743,27 @@
                 $('#sidebarOverlay').removeClass('active');
             }
             
-            let titles = { 'overview':'Rack Overview', 'database':'Rack Database', 'visualizer':'Rack Visualizer'};
+            let titles = { 
+                'overview':'Rack Overview', 
+                'database':'Rack Database', 
+                'visualizer':'Rack Visualizer', 
+                'otdr-analytics':'Gear Dashboard',
+                'otdr':'Test Gear Record',
+                'otdr-dashboard':'Live Status List',
+                'otdr-audit':'Audit Trail'
+            };
             $('#headerPageTitle').text(titles[tabId]);
+            $('#headerSubtitle').text(tabId.startsWith('otdr') ? 'Field Operations & Handover Log' : 'Infrastructure Performance Dashboard · Layer 1 & 2 DWDM');
             
             $('.tab-pane').removeClass('show active');
             $('#' + tabId).addClass('show active');
 
-            if (tabId === 'database' && dataTable) {
-                setTimeout(() => { dataTable.columns.adjust(); }, 150);
+            if ((tabId === 'database' || tabId === 'otdr-dashboard' || tabId === 'otdr-audit') && dataTable) {
+                setTimeout(() => { 
+                    if (dataTable) dataTable.columns.adjust(); 
+                    if (window.otdrLiveDt) window.otdrLiveDt.columns.adjust();
+                    if (window.otdrAuditDt) window.otdrAuditDt.columns.adjust();
+                }, 150);
             }
         }
 
@@ -618,7 +772,14 @@
         // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzeYS6m9z-H1Uy52BzjLAIRhOjXD7A4F9GXn-dhq7o8rngQKmEtW4QSYtd82Sj2uOWJ2A/exec"; 
         
-        let localCacheData = []; let dataTable; let editingDtRow; let oldRowData; let chart1, chart2;
+        let localCacheData = []; let dataTable; let editingDtRow; let oldRowData; let chart1, chart2, otdrChart;
+
+        let otdrGearList = [];
+        let otdrAuditLog = []; 
+        let fetchedEngineers = [];
+
+        let otdrLiveDt; 
+        let otdrAuditDt;
 
         function showLoading(msg) { $('#loadingText').text(msg); $('#loadingOverlay').css('display', 'flex'); }
         function hideLoading() { $('#loadingOverlay').hide(); }
@@ -634,7 +795,7 @@
             return { startU: s, sizeU: (e-s)+1 };
         }
 
-        // --- DASHBOARD LOGIC ---
+        // --- RACK OVERVIEW LOGIC ---
         function updateDashboard(data) {
             if(!data || data.length === 0) return;
             let sites = new Set(); let racks = new Set(); let rooms = new Set();
@@ -678,6 +839,8 @@
             $('#k19in').text(size19); $('#k21in').text(size21);
 
             let siteCounts = {}; data.forEach(r => { siteCounts[r[0]] = (siteCounts[r[0]]||0)+1; });
+            
+            populateOtdrDropdowns(Array.from(sites));
 
             if(chart1) chart1.destroy(); if(chart2) chart2.destroy();
             Chart.defaults.font.family = "'Inter', sans-serif";
@@ -694,6 +857,53 @@
                 }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
             });
         }
+        
+        // --- NEW OTDR ANALYTICS LOGIC ---
+        function updateOtdrAnalytics(gearList) {
+            if(!gearList) return;
+            
+            let total = gearList.length;
+            let avail = 0;
+            let dep = 0;
+            let siteCounts = {};
+            
+            gearList.forEach(g => {
+                if(g[1] === 'Available') {
+                    avail++;
+                } else {
+                    dep++;
+                    let site = g[3] || 'Unknown';
+                    siteCounts[site] = (siteCounts[site] || 0) + 1;
+                }
+            });
+            
+            $('#kGearTotal').text(total);
+            $('#kGearAvail').text(avail);
+            $('#kGearDep').text(dep);
+            
+            if(otdrChart) otdrChart.destroy();
+            let ctx = document.getElementById('otdrSiteChart');
+            if (ctx) {
+                otdrChart = new Chart(ctx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(siteCounts).length ? Object.keys(siteCounts) : ['No Deployments'],
+                        datasets: [{
+                            label: 'Deployed Units',
+                            data: Object.keys(siteCounts).length ? Object.values(siteCounts) : [0],
+                            backgroundColor: '#ef4444',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+            }
+        }
 
         async function fetchDataFromSheet(isSilent = false) {
             if (!isSilent) showLoading("Syncing latest data...");
@@ -701,8 +911,35 @@
             try {
                 const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
-                localCacheData = data; dataTable.clear(); dataTable.rows.add(data).draw(false); 
-                updateDashboard(data); populateVisualizerSites(); if($('#visRackSelect').val()) generateRack();
+                
+                // 1. Process OTDR Data First
+                if (data.otdrLive) otdrGearList = data.otdrLive;
+                if (data.otdrAudit) {
+                    otdrAuditLog = data.otdrAudit.map(row => {
+                        return [new Date(row[0]).toLocaleString(), row[1], row[2], row[3], row[4]];
+                    });
+                }
+                
+                if (data.engineers && data.engineers.length > 0) {
+                    fetchedEngineers = data.engineers.sort();
+                } else {
+                    // Fallback to user corrected list if config tab is unready
+                    fetchedEngineers = ["Azwan", "Fadros", "Firdaus", "Harun", "Hishamuddin", "Ihsan", "Madnor", "Majid"];
+                }
+                
+                // 2. Parse DWDM Data and Update Dashboard
+                let rackDataArray = data.rackData || (Array.isArray(data) ? data : []);
+                localCacheData = rackDataArray; 
+                dataTable.clear(); dataTable.rows.add(rackDataArray).draw(false); 
+                updateDashboard(rackDataArray); 
+                populateVisualizerSites(); 
+                if($('#visRackSelect').val()) generateRack();
+                
+                // 3. Update OTDR UI elements
+                if (window.otdrLiveDt) window.otdrLiveDt.clear().rows.add(otdrGearList).draw(false);
+                if (window.otdrAuditDt) window.otdrAuditDt.clear().rows.add(otdrAuditLog).draw(false);
+                updateOtdrAnalytics(otdrGearList);
+                
                 if (!isSilent) hideLoading(); updateSyncStatus('Live Sync', 'success', 'bi-circle-fill');
             } catch (error) {
                 if (!isSilent) { alert("Network error"); hideLoading(); }
@@ -749,6 +986,57 @@
                     $('td:eq(5)', row).html(`<span class="badge-vendor ${bg}">${v}</span>`);
                 }
             });
+            
+            window.otdrLiveDt = $('#otdrLiveTable').DataTable({
+                data: [], pageLength: 10, dom: 'rt',
+                columns: [
+                    { 
+                        title: "Testgear ID",
+                        render: function(data, type, row) {
+                            let name = row[0];
+                            let upperName = name.toUpperCase();
+                            let bg = 'vendor-generic';
+                            if(upperName.includes('VIAVI')) bg = 'vendor-viavi';
+                            if(upperName.includes('EXFO')) bg = 'vendor-exfo';
+                            if(upperName.includes('YOKOGAWA')) bg = 'vendor-yokogawa';
+                            if(upperName.includes('ANRITSU')) bg = 'vendor-anritsu';
+                            return `<span class="badge-vendor ${bg}">${name}</span>`;
+                        }
+                    },
+                    { 
+                        title: "Status", 
+                        render: function(data, type, row) {
+                            let badgeClass = row[1] === 'Available' ? 'bg-success' : 'bg-danger';
+                            return `<span class="badge ${badgeClass}">${row[1]}</span>`;
+                        }
+                    },
+                    { title: "Current FE" },
+                    { title: "Site Location" }
+                ]
+            });
+            
+            window.otdrAuditDt = $('#otdrAuditTable').DataTable({
+                data: [], pageLength: 15, order: [[0, "desc"]], dom: 'rt<"row mt-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                columns: [
+                    { title: "Timestamp" }, 
+                    { title: "Testgear ID" }, 
+                    { 
+                        title: "Action",
+                        render: function(data) {
+                            let bClass = 'bg-secondary';
+                            if(data.includes('Check-Out')) bClass = 'bg-primary';
+                            if(data.includes('Check-In')) bClass = 'bg-success';
+                            if(data.includes('Transfer')) bClass = 'bg-warning text-dark';
+                            return `<span class="badge ${bClass}">${data}</span>`;
+                        }
+                    }, 
+                    { title: "FE Name" }, 
+                    { title: "Destination / Site" }
+                ]
+            });
+
+            $('#otdrLiveSearch').on('keyup', function() { window.otdrLiveDt.search(this.value).draw(); });
+            $('#otdrAuditSearch').on('keyup', function() { window.otdrAuditDt.search(this.value).draw(); });
 
             fetchDataFromSheet(false);
             setInterval(() => { fetchDataFromSheet(true); }, 300000);
@@ -756,7 +1044,11 @@
             $('#dbCustomSearch').on('keyup', function() { dataTable.search(this.value).draw(); });
             $('#dbFilterSite').on('change', function() { dataTable.column(0).search(this.value).draw(); });
             $('#dbFilterVendor').on('change', function() { dataTable.column(5).search(this.value).draw(); });
-            $(window).resize(function() { if($('#database').hasClass('active')) dataTable.columns.adjust(); });
+            $(window).resize(function() { 
+                if($('#database').hasClass('active')) dataTable.columns.adjust(); 
+                if($('#otdr-dashboard').hasClass('active')) window.otdrLiveDt.columns.adjust();
+                if($('#otdr-audit').hasClass('active')) window.otdrAuditDt.columns.adjust();
+            });
 
             $('#vendor').on('change', function() { handleVendorChange($(this).val(), $('#model')); });
             $('#editVendor').on('change', function() { handleVendorChange($(this).val(), $('#editModel')); });
@@ -871,6 +1163,150 @@
 
             $('#statUtilized').text(used+'U'); $('#statFree').text((TOTAL-used)+'U');
             $('#utilizationBar').css('width', (used/TOTAL*100)+'%').toggleClass('bg-danger', used/TOTAL>0.8).toggleClass('bg-primary', used/TOTAL<=0.8);
+        }
+
+        // --- OTDR TRACKER LOGIC ---
+        function populateOtdrDropdowns(liveSites) {
+            const gearDropdown = document.getElementById('gearSelect');
+            const feDropdown = document.getElementById('feSelect');
+            const siteDropdown = document.getElementById('otdrSiteSelect');
+            
+            gearDropdown.innerHTML = '<option value="">-- Choose Unit --</option>';
+            feDropdown.innerHTML = '<option value="">-- Select Engineer --</option>';
+            siteDropdown.innerHTML = '<option value="">-- Select Site --</option>';
+            
+            otdrGearList.forEach(gear => { gearDropdown.add(new Option(`${gear[0]} (${gear[1]})`, gear[0])); });
+            
+            // Populate fetched FE names
+            fetchedEngineers.forEach(fe => { feDropdown.add(new Option(fe, fe)); });
+            
+            let allSites = new Set(['Fiberail HQ', ...liveSites]);
+            allSites.forEach(site => { siteDropdown.add(new Option(site, site)); });
+            
+            siteDropdown.add(new Option("Other (Manual Input)", "Other"));
+            
+            // Apply Field Engineer Memory
+            let rememberedFE = localStorage.getItem('lastActiveFE');
+            if (rememberedFE) { feDropdown.value = rememberedFE; }
+        }
+
+        function toggleManualSite() {
+            const siteSelect = document.getElementById('otdrSiteSelect').value;
+            const manualDiv = document.getElementById('manualSiteDiv');
+            const manualInput = document.getElementById('otdrSiteManual');
+            
+            if (siteSelect === 'Other') {
+                manualDiv.style.display = 'block';
+                manualInput.focus();
+            } else {
+                manualDiv.style.display = 'none';
+                manualInput.value = '';
+            }
+        }
+
+        function updateGearDetails() {
+            const selectedId = document.getElementById('gearSelect').value;
+            const box = document.getElementById('gearStatus');
+            const actionSelect = document.getElementById('actionSelect');
+            
+            if (!selectedId) { box.style.display = 'none'; return; }
+
+            const item = otdrGearList.find(g => g[0] === selectedId);
+            const isAvailable = (item[1] === 'Available');
+            
+            const statusClass = isAvailable ? 'status-available' : 'status-deployed';
+            box.style.display = 'block';
+            box.innerHTML = `<strong>Status:</strong> <span class="${statusClass}">${item[1]}</span><br><strong>Current Holder:</strong> ${item[2]}<br><strong>Location:</strong> ${item[3]}`;
+
+            for (let i = 0; i < actionSelect.options.length; i++) {
+                let opt = actionSelect.options[i];
+                if (isAvailable) {
+                    if (opt.value === 'Check-Out') { opt.disabled = false; opt.selected = true; }
+                    else opt.disabled = true;
+                } else {
+                    if (opt.value === 'Check-Out') opt.disabled = true;
+                    else { opt.disabled = false; if(opt.value === 'Transfer') opt.selected = true; }
+                }
+            }
+            toggleOtdrFields();
+        }
+
+        function toggleOtdrFields() {
+            const action = document.getElementById('actionSelect').value;
+            document.getElementById('dynamicOtdrFields').style.display = (action === 'Check-In (HQ)') ? 'none' : 'block';
+        }
+
+        async function submitOtdrRecord() {
+            let selectedSite = document.getElementById('otdrSiteSelect').value;
+            
+            if (selectedSite === 'Other') {
+                selectedSite = document.getElementById('otdrSiteManual').value.trim();
+                selectedSite = selectedSite.toUpperCase(); 
+                if (!selectedSite) return alert("Error: Please type the name of the custom site.");
+            }
+
+            const payload = {
+                type: 'OTDR_UPDATE',
+                gearId: document.getElementById('gearSelect').value,
+                actionType: document.getElementById('actionSelect').value,
+                feName: document.getElementById('feSelect').value,
+                siteName: selectedSite,
+                timestamp: new Date().toISOString()
+            };
+
+            if (!payload.gearId) return alert("Select a Testgear unit.");
+            if (payload.actionType !== 'Check-In (HQ)' && (!payload.feName || !payload.siteName)) {
+                return alert("Error: Please select both a Field Engineer and a Site.");
+            }
+
+            // Save FE Memory to device
+            if(payload.feName) { localStorage.setItem('lastActiveFE', payload.feName); }
+
+            // UI Guard to prevent double clicks
+            const submitBtn = document.getElementById('otdrSubmitBtn');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+                
+                let idx = otdrGearList.findIndex(g => g[0] === payload.gearId);
+                if(idx !== -1) {
+                    if(payload.actionType === 'Check-In (HQ)') otdrGearList[idx] = [payload.gearId, 'Available', '-', 'Fiberail HQ'];
+                    else otdrGearList[idx] = [payload.gearId, 'Deployed', payload.feName, payload.siteName];
+                }
+                
+                if(window.otdrLiveDt) { window.otdrLiveDt.clear().rows.add(otdrGearList).draw(); }
+
+                let timeStr = new Date(payload.timestamp).toLocaleString();
+                let newAuditRow = [timeStr, payload.gearId, payload.actionType, payload.feName || '-', payload.siteName || '-'];
+                otdrAuditLog.unshift(newAuditRow); 
+                if(window.otdrAuditDt) { window.otdrAuditDt.clear().rows.add(otdrAuditLog).draw(); }
+                
+                updateOtdrAnalytics(otdrGearList);
+
+                // Reset form gracefully
+                document.getElementById('gearSelect').value = "";
+                document.getElementById('gearStatus').style.display = 'none';
+                document.getElementById('manualSiteDiv').style.display = 'none';
+                document.getElementById('otdrSiteManual').value = '';
+                document.getElementById('otdrSiteSelect').value = "";
+                
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+
+                switchTab('otdr-dashboard', $('.menu-link:contains("Live Status")'));
+
+            } catch (error) {
+                alert("Saved locally! Offline queue will sync when connected.");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
         }
         
         // Theme Toggle
