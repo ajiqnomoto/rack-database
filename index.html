@@ -3,20 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RackTrack - AI Intelligence</title>
-    
+    <title>RackTrack — Infrastructure &amp; OTDR Tracker</title>
+    <meta name="description" content="RackTrack — live tracker for rack infrastructure and OTDR test gear: deployments, rack capacity, vendor breakdown and field-ops handovers.">
+    <link rel="canonical" href="https://ajiqnomoto.github.io/rack-database/">
+    <meta property="og:title" content="RackTrack — Infrastructure &amp; OTDR Tracker">
+    <meta property="og:description" content="Live tracker for rack infrastructure and OTDR test gear: deployments, rack capacity, vendor breakdown and field-ops handovers.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ajiqnomoto.github.io/rack-database/">
+
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#008b8b">
+    <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
-    
+
     <!-- Google Fonts, Bootstrap 5.3 & Bootstrap Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.datatables.net">
+    <link rel="preconnect" href="https://script.google.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
     <!-- DataTables & Chart.js -->
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         /* --- GLOBAL VARIABLES --- */
@@ -193,60 +205,66 @@
     </style>
 </head>
 <body>
+    <noscript>
+        <div style="position:fixed;top:0;left:0;right:0;z-index:2000;background:#dc3545;color:#fff;padding:12px 20px;text-align:center;font-family:'Inter',sans-serif;font-size:0.9rem;">
+            RackTrack requires JavaScript to load live data and render the dashboard. Please enable JavaScript in your browser.
+        </div>
+    </noscript>
 
     <!-- MOBILE OVERLAY -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- SIDEBAR -->
-    <aside class="app-sidebar">
+    <aside class="app-sidebar" role="navigation" aria-label="Main navigation">
         <div class="sidebar-brand">
-            <div class="bg-light text-primary rounded p-1 me-2"><i class="bi bi-activity"></i></div>
+            <div class="bg-light text-primary rounded p-1 me-2"><i class="bi bi-activity" aria-hidden="true"></i></div>
             <div>
                 <h4>RackTrack</h4>
-                <span>AI INTELLIGENCE</span>
+                <span>INFRASTRUCTURE TRACKER</span>
             </div>
         </div>
         <div class="sidebar-menu">
             <div class="menu-category">Overview</div>
-            <a class="menu-link active" onclick="switchTab('overview', this)"><i class="bi bi-grid-1x2"></i> Rack Overview</a>
+            <a class="menu-link active" onclick="switchTab('overview', this)"><i class="bi bi-grid-1x2" aria-hidden="true"></i> Rack Overview</a>
             
             <div class="menu-category">Operations</div>
-            <a class="menu-link" onclick="switchTab('visualizer', this)"><i class="bi bi-server"></i> Rack Visualizer</a>
+            <a class="menu-link" onclick="switchTab('visualizer', this)"><i class="bi bi-server" aria-hidden="true"></i> Rack Visualizer</a>
             
             <div class="menu-category">Repository</div>
-            <a class="menu-link" onclick="switchTab('database', this)"><i class="bi bi-database"></i> Rack Database</a>
-            <a class="menu-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1XAip3cPjmOHmR4tJBLJOKZoskaC87LWNgsh1IcC_Sd0/edit', '_blank')"><i class="bi bi-file-earmark-spreadsheet"></i> Raw Data Sheet</a>
+            <a class="menu-link" onclick="switchTab('database', this)"><i class="bi bi-database" aria-hidden="true"></i> Rack Database</a>
+            <a class="menu-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1XAip3cPjmOHmR4tJBLJOKZoskaC87LWNgsh1IcC_Sd0/edit', '_blank')"><i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i> Raw Data Sheet</a>
             
             <!-- FIELD OPS SEGMENT -->
             <div class="menu-category">Field Ops</div>
-            <a class="menu-link" onclick="switchTab('otdr-analytics', this)"><i class="bi bi-pie-chart"></i> Gear Dashboard</a>
-            <a class="menu-link" onclick="switchTab('otdr-dashboard', this)"><i class="bi bi-display"></i> Live Status</a>
-            <a class="menu-link" onclick="switchTab('otdr', this)"><i class="bi bi-tools"></i> OTDR Tracker</a>
-            <a class="menu-link" onclick="switchTab('otdr-audit', this)"><i class="bi bi-clock-history"></i> Audit Trail</a>
+            <a class="menu-link" onclick="switchTab('otdr-analytics', this)"><i class="bi bi-pie-chart" aria-hidden="true"></i> Gear Dashboard</a>
+            <a class="menu-link" onclick="switchTab('otdr-dashboard', this)"><i class="bi bi-display" aria-hidden="true"></i> Live Status</a>
+            <a class="menu-link" onclick="switchTab('otdr', this)"><i class="bi bi-tools" aria-hidden="true"></i> OTDR Tracker</a>
+            <a class="menu-link" onclick="switchTab('otdr-audit', this)"><i class="bi bi-clock-history" aria-hidden="true"></i> Audit Trail</a>
         </div>
         <div class="sidebar-footer">
-            <i class="bi bi-circle-fill text-success me-1" style="font-size: 8px;"></i> Live • Optimized
+            <i class="bi bi-circle-fill text-success me-1" style="font-size: 8px;" aria-hidden="true"></i> Live • Optimized
         </div>
     </aside>
 
     <!-- MAIN APP -->
     <main class="app-main">
+        <h1 class="visually-hidden">RackTrack dashboard</h1>
         <header class="app-header">
             <div class="d-flex align-items-center">
-                <button class="header-toggle" id="mobileMenuBtn"><i class="bi bi-list"></i></button>
+                <button class="header-toggle" id="mobileMenuBtn"><i class="bi bi-list" aria-hidden="true"></i></button>
                 <div class="header-title">
                     <h2 id="headerPageTitle">Rack Overview</h2>
                     <p class="d-none d-md-block" id="headerSubtitle">Infrastructure Performance Dashboard · Layer 1 & 2 DWDM</p>
                 </div>
             </div>
             <div class="header-actions">
-                <div class="status-pill d-none d-sm-flex"><i class="bi bi-clock me-2"></i> <span id="currentTime">00:00:00</span></div>
-                <div class="status-pill" id="syncStatus"><i class="bi bi-hourglass-split"></i><span class="d-none d-md-inline ms-2">Syncing...</span></div>
+                <div class="status-pill d-none d-sm-flex"><i class="bi bi-clock me-2" aria-hidden="true"></i> <span id="currentTime">00:00:00</span></div>
+                <div class="status-pill" id="syncStatus"><i class="bi bi-hourglass-split" aria-hidden="true"></i><span class="d-none d-md-inline ms-2">Syncing...</span></div>
                 <button class="btn-custom-outline" onclick="fetchDataFromSheet(false)">
-                    <i class="bi bi-download"></i><span class="d-none d-md-inline ms-1"> Refresh</span>
+                    <i class="bi bi-download" aria-hidden="true"></i><span class="d-none d-md-inline ms-1"> Refresh</span>
                 </button>
                 <button class="btn-custom-primary" id="darkModeToggle">
-                    <i class="bi bi-moon-fill"></i><span class="d-none d-md-inline ms-1"> Theme</span>
+                    <i class="bi bi-moon-fill" aria-hidden="true"></i><span class="d-none d-md-inline ms-1"> Theme</span>
                 </button>
             </div>
         </header>
@@ -263,9 +281,9 @@
                 <div class="tab-pane fade show active" id="overview" role="tabpanel">
                     <div class="ai-banner">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="icon-box"><i class="bi bi-cpu"></i></div>
+                            <div class="icon-box"><i class="bi bi-cpu" aria-hidden="true"></i></div>
                             <div>
-                                <div class="badge-insight mb-1"><i class="bi bi-stars"></i> AI INSIGHT ENGINE • LIVE</div>
+                                <div class="badge-insight mb-1"><i class="bi bi-stars" aria-hidden="true"></i> LIVE INSIGHTS</div>
                                 <h5 class="fw-bold mb-1" style="color: var(--text-main); font-size: 1rem;">Portfolio at <span id="aiSyncRate">100</span>% health — <span id="aiActiveText">0</span> active devices</h5>
                                 <div class="text-muted" style="font-size: 0.8rem;">AI engine scanned <span id="aiSitesText">0</span> sites + <span id="aiRacksText">0</span> unique racks. Primary hub: <span id="aiTopSite" class="fw-bold text-uppercase">N/A</span>.</div>
                             </div>
@@ -278,7 +296,7 @@
                     <div class="row g-4 mb-4">
                         <div class="col-xl-4 col-lg-12">
                             <div class="kpi-main-card">
-                                <h5><i class="bi bi-hdd-network text-primary"></i> INFRASTRUCTURE OVERVIEW</h5>
+                                <h5><i class="bi bi-hdd-network text-primary" aria-hidden="true"></i> INFRASTRUCTURE OVERVIEW</h5>
                                 <div class="mini-kpi-grid">
                                     <div class="mini-kpi b-cyan"><div class="title">Total Equip</div><div class="value" id="kTotalEq">0</div><div class="sub-text text-primary">Installed</div></div>
                                     <div class="mini-kpi b-green"><div class="title">Active Sites</div><div class="value" id="kActiveSites">0</div><div class="sub-text text-success">100% online</div></div>
@@ -294,7 +312,7 @@
                         </div>
                         <div class="col-xl-4 col-md-6">
                             <div class="kpi-main-card">
-                                <h5><i class="bi bi-cpu text-success"></i> VENDOR DEPLOYMENTS</h5>
+                                <h5><i class="bi bi-cpu text-success" aria-hidden="true"></i> VENDOR DEPLOYMENTS</h5>
                                 <div class="mini-kpi-grid">
                                     <div class="mini-kpi b-cyan"><div class="title">Total Vendors</div><div class="value" id="kVendors">0</div><div class="sub-text text-primary">Partners</div></div>
                                     <div class="mini-kpi b-green"><div class="title">Nokia Equip</div><div class="value" id="kNokia">0</div><div class="sub-text text-success">Active</div></div>
@@ -309,7 +327,7 @@
                         </div>
                         <div class="col-xl-4 col-md-6">
                             <div class="kpi-main-card">
-                                <h5><i class="bi bi-server text-warning"></i> CAPACITY TRACKER</h5>
+                                <h5><i class="bi bi-server text-warning" aria-hidden="true"></i> CAPACITY TRACKER</h5>
                                 <div class="mini-kpi-grid">
                                     <div class="mini-kpi b-cyan"><div class="title">Total U-Space</div><div class="value" id="kTotalU">0</div><div class="sub-text text-primary">Max Scale</div></div>
                                     <div class="mini-kpi b-green"><div class="title">Utilized U</div><div class="value" id="kUsedU">0</div><div class="sub-text text-success">Occupied</div></div>
@@ -328,7 +346,7 @@
                         <div class="col-lg-6">
                             <div class="chart-card">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="mb-0 fw-bold" style="font-size: 0.9rem;"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Equipment by Site</h5>
+                                    <h5 class="mb-0 fw-bold" style="font-size: 0.9rem;"><i class="bi bi-bar-chart-fill text-primary me-2" aria-hidden="true"></i>Equipment by Site</h5>
                                     <span class="badge bg-light text-primary border">Live</span>
                                 </div>
                                 <div class="chart-container"><canvas id="siteChart"></canvas></div>
@@ -337,7 +355,7 @@
                         <div class="col-lg-6">
                             <div class="chart-card">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="mb-0 fw-bold" style="font-size: 0.9rem;"><i class="bi bi-pie-chart-fill text-success me-2"></i>Vendor Breakdown</h5>
+                                    <h5 class="mb-0 fw-bold" style="font-size: 0.9rem;"><i class="bi bi-pie-chart-fill text-success me-2" aria-hidden="true"></i>Vendor Breakdown</h5>
                                     <span class="badge bg-light text-primary border">Live</span>
                                 </div>
                                 <div class="chart-container"><canvas id="vendorChart"></canvas></div>
@@ -351,14 +369,14 @@
                     <div class="visualizer-container">
                         <div class="vis-controls">
                             <div class="chart-card mb-4">
-                                <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-search me-2"></i>Select Rack</h5>
+                                <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-search me-2" aria-hidden="true"></i>Select Rack</h5>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">Site</label>
-                                    <select class="form-select" id="visSiteSelect"><option value="" disabled selected>Choose a site...</option></select>
+                                    <select class="form-select" id="visSiteSelect" aria-label="Site"><option value="" disabled selected>Choose a site...</option></select>
                                 </div>
                                 <div>
                                     <label class="form-label small fw-bold">Rack ID</label>
-                                    <select class="form-select" id="visRackSelect" disabled><option value="" disabled selected>Select site first...</option></select>
+                                    <select class="form-select" id="visRackSelect" disabled aria-label="Rack ID"><option value="" disabled selected>Select site first...</option></select>
                                 </div>
                                 
                                 <div id="rackStatsCard" style="display: none;">
@@ -380,7 +398,7 @@
                         
                         <div class="vis-canvas-area">
                             <div id="placeholderRack">
-                                <i class="bi bi-server text-muted" style="font-size: 7rem; opacity: 0.15;"></i>
+                                <i class="bi bi-server text-muted" style="font-size: 7rem; opacity: 0.15;" aria-hidden="true"></i>
                             </div>
                             <div class="rack-cabinet" id="rackCanvas" style="display: none;">
                                 <div class="rack-rail left"></div>
@@ -396,15 +414,15 @@
                     <div class="table-responsive">
                         <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center mb-4 gap-3">
                             <div>
-                                <h5 class="fw-bold m-0"><i class="bi bi-database me-2 text-primary"></i>Rack Database</h5>
+                                <h5 class="fw-bold m-0"><i class="bi bi-database me-2 text-primary" aria-hidden="true"></i>Rack Database</h5>
                                 <p class="text-muted small mb-0">Master Layer 1 & 2 Infrastructure Repository</p>
                             </div>
                             <div class="d-flex flex-row flex-nowrap align-items-center gap-2 overflow-auto pb-1 db-toolbar">
                                 <div class="position-relative">
-                                    <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left: 10px; font-size: 0.85rem;"></i>
+                                    <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left: 10px; font-size: 0.85rem;" aria-hidden="true"></i>
                                     <input type="text" id="dbCustomSearch" class="form-control form-control-sm shadow-sm w-auto" placeholder="Search records..." style="padding-left: 32px; min-width: 150px;">
                                 </div>
-                                <select id="dbFilterSite" class="form-select form-select-sm shadow-sm w-auto" style="min-width: 130px;">
+                                <select id="dbFilterSite" class="form-select form-select-sm shadow-sm w-auto" style="min-width: 130px;" aria-label="Filter by site">
                                     <option value="">All Sites</option>
                                     <option value="AIMS CYBERJAYA">AIMS CYBERJAYA</option>
                                     <option value="CX2">CX2</option>
@@ -417,7 +435,7 @@
                                     <option value="ANSAR">ANSAR</option>
                                     <option value="NCC KL">NCC KL</option>
                                 </select>
-                                <select id="dbFilterVendor" class="form-select form-select-sm shadow-sm w-auto" style="min-width: 130px;">
+                                <select id="dbFilterVendor" class="form-select form-select-sm shadow-sm w-auto" style="min-width: 130px;" aria-label="Filter by vendor">
                                     <option value="">All Vendors</option>
                                     <option value="Nokia">Nokia</option>
                                     <option value="Huawei">Huawei</option>
@@ -432,7 +450,7 @@
                                     <option value="Others">Others</option>
                                 </select>
                                 <button class="btn-custom-primary text-nowrap shadow-sm ms-1" data-bs-toggle="modal" data-bs-target="#addModal">
-                                    <i class="bi bi-plus-lg me-1"></i> Add Equip
+                                    <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Add Equip
                                 </button>
                             </div>
                         </div>
@@ -453,7 +471,7 @@
                 <div class="tab-pane fade" id="otdr-analytics" role="tabpanel">
                     <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center mb-4 gap-3">
                         <div>
-                            <h5 class="fw-bold m-0"><i class="bi bi-pie-chart me-2 text-primary"></i>Test Gear Analytics</h5>
+                            <h5 class="fw-bold m-0"><i class="bi bi-pie-chart me-2 text-primary" aria-hidden="true"></i>Test Gear Analytics</h5>
                             <p class="text-muted small mb-0">Utilization metrics and physical deployment mapping</p>
                         </div>
                     </div>
@@ -461,7 +479,7 @@
                     <div class="row g-4 mb-4">
                         <div class="col-xl-4 col-lg-12">
                             <div class="kpi-main-card">
-                                <h5><i class="bi bi-activity text-primary"></i> FLEET UTILIZATION</h5>
+                                <h5><i class="bi bi-activity text-primary" aria-hidden="true"></i> FLEET UTILIZATION</h5>
                                 <div class="mini-kpi-grid">
                                     <div class="mini-kpi b-cyan"><div class="title">Total Units</div><div class="value" id="kGearTotal">0</div><div class="sub-text text-primary">Registered</div></div>
                                     <div class="mini-kpi b-green"><div class="title">Available</div><div class="value" id="kGearAvail">0</div><div class="sub-text text-success">At HQ</div></div>
@@ -472,7 +490,7 @@
                         <div class="col-xl-8 col-lg-12">
                             <div class="chart-card">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="mb-0 fw-bold" style="font-size: 0.9rem;"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Active Deployments by Site</h5>
+                                    <h5 class="mb-0 fw-bold" style="font-size: 0.9rem;"><i class="bi bi-geo-alt-fill text-danger me-2" aria-hidden="true"></i>Active Deployments by Site</h5>
                                     <span class="badge bg-light text-primary border">Live</span>
                                 </div>
                                 <div class="chart-container"><canvas id="otdrSiteChart"></canvas></div>
@@ -486,12 +504,12 @@
                     <div class="table-responsive">
                         <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center mb-4 gap-3">
                             <div>
-                                <h5 class="fw-bold m-0"><i class="bi bi-display me-2 text-primary"></i>Live Status List</h5>
+                                <h5 class="fw-bold m-0"><i class="bi bi-display me-2 text-primary" aria-hidden="true"></i>Live Status List</h5>
                                 <p class="text-muted small mb-0">Real-time availability of all test gear units</p>
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="position-relative">
-                                    <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left: 10px; font-size: 0.85rem;"></i>
+                                    <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left: 10px; font-size: 0.85rem;" aria-hidden="true"></i>
                                     <input type="text" id="otdrLiveSearch" class="form-control form-control-sm shadow-sm" placeholder="Search gear or site..." style="padding-left: 32px; min-width: 250px;">
                                 </div>
                             </div>
@@ -510,17 +528,17 @@
                     <div class="row justify-content-center">
                         <div class="col-lg-6 col-md-8">
                             <div class="card p-4 shadow-sm" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;">
-                                <h5 class="fw-bold mb-4" style="color: var(--text-main);"><i class="bi bi-tools text-primary me-2"></i>Test Gear Record</h5>
+                                <h5 class="fw-bold mb-4" style="color: var(--text-main);"><i class="bi bi-tools text-primary me-2" aria-hidden="true"></i>Test Gear Record</h5>
                                 
                                 <label class="form-label small fw-bold">Select Testgear Unit:</label>
-                                <select class="form-select mb-3" id="gearSelect" onchange="updateGearDetails()">
+                                <select class="form-select mb-3" id="gearSelect" onchange="updateGearDetails()" aria-label="Testgear unit">
                                     <option value="">-- Choose Unit --</option>
                                 </select>
 
                                 <div id="gearStatus" class="p-3 mb-3" style="display:none; background: rgba(0,0,0,0.03); border-radius: 8px; border: 1px solid var(--border-color);"></div>
 
                                 <label class="form-label small fw-bold">Action:</label>
-                                <select class="form-select mb-3" id="actionSelect" onchange="toggleOtdrFields()">
+                                <select class="form-select mb-3" id="actionSelect" onchange="toggleOtdrFields()" aria-label="Action">
                                     <option value="Check-Out">Check-Out (Deploy)</option>
                                     <option value="Transfer">Site Transfer (Handover)</option>
                                     <option value="Check-In (HQ)">Check-In (Return to HQ)</option>
@@ -528,12 +546,12 @@
 
                                 <div id="dynamicOtdrFields">
                                     <label class="form-label small fw-bold">Field Engineer (FE):</label>
-                                    <select class="form-select mb-3" id="feSelect">
+                                    <select class="form-select mb-3" id="feSelect" aria-label="Field engineer">
                                         <option value="">-- Select Engineer --</option>
                                     </select>
 
                                     <label class="form-label small fw-bold">Current / Destination Site:</label>
-                                    <select class="form-select mb-2" id="otdrSiteSelect" onchange="toggleManualSite()">
+                                    <select class="form-select mb-2" id="otdrSiteSelect" onchange="toggleManualSite()" aria-label="Current or destination site">
                                         <option value="">-- Select Site --</option>
                                     </select>
                                     
@@ -553,12 +571,12 @@
                     <div class="table-responsive">
                         <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center mb-4 gap-3">
                             <div>
-                                <h5 class="fw-bold m-0"><i class="bi bi-clock-history me-2 text-primary"></i>Audit Trail</h5>
+                                <h5 class="fw-bold m-0"><i class="bi bi-clock-history me-2 text-primary" aria-hidden="true"></i>Audit Trail</h5>
                                 <p class="text-muted small mb-0">Immutable historical log of all equipment movements</p>
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="position-relative">
-                                    <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left: 10px; font-size: 0.85rem;"></i>
+                                    <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left: 10px; font-size: 0.85rem;" aria-hidden="true"></i>
                                     <input type="text" id="otdrAuditSearch" class="form-control form-control-sm shadow-sm" placeholder="Search by FE or ID..." style="padding-left: 32px; min-width: 250px;">
                                 </div>
                             </div>
@@ -581,7 +599,7 @@
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
           <div class="modal-header" style="background: var(--bg-header);">
-            <h5 class="modal-title fw-bold" style="color: var(--color-primary);"><i class="bi bi-plus-circle me-2"></i>Add New Equipment</h5>
+            <h5 class="modal-title fw-bold" style="color: var(--color-primary);"><i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Add New Equipment</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body p-4" style="background: var(--bg-card);">
@@ -589,7 +607,7 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Site Name</label>
-                        <select class="form-select" id="siteName" required>
+                        <select class="form-select" id="siteName" required aria-label="Site name">
                             <option value="" disabled selected>Select Site...</option>
                             <option value="AIMS CYBERJAYA">AIMS CYBERJAYA</option>
                             <option value="CX2">CX2</option>
@@ -610,7 +628,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Power Source</label>
-                        <select class="form-select" id="powerSource" required>
+                        <select class="form-select" id="powerSource" required aria-label="Power source">
                             <option value="AC Power">AC Power</option><option value="DC Power">DC Power</option>
                         </select>
                     </div>
@@ -621,7 +639,7 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small fw-bold">Rack Width</label>
-                        <select class="form-select" id="rackSize" required><option value="19 inch">19"</option><option value="21 inch">21"</option></select>
+                        <select class="form-select" id="rackSize" required aria-label="Rack width"><option value="19 inch">19"</option><option value="21 inch">21"</option></select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small fw-bold">Height (U)</label>
@@ -633,7 +651,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Vendor</label>
-                        <select class="form-select" id="vendor" required>
+                        <select class="form-select" id="vendor" required aria-label="Vendor">
                             <option value="" disabled selected>Select Vendor...</option>
                             <option value="Nokia">Nokia</option><option value="Huawei">Huawei</option>
                             <option value="Ciena">Ciena</option><option value="Infinera">Infinera</option>
@@ -643,7 +661,7 @@
                             <option value="Others">Others</option>
                         </select>
                     </div>
-                    <div class="col-md-4"><label class="form-label small fw-bold">Model</label><select class="form-select" id="model" required><option value="" disabled selected>Select Vendor first...</option></select></div>
+                    <div class="col-md-4"><label class="form-label small fw-bold">Model</label><select class="form-select" id="model" required aria-label="Model"><option value="" disabled selected>Select Vendor first...</option></select></div>
                     <div class="col-md-4"><label class="form-label small fw-bold">Notes / Serial</label><input type="text" class="form-control" id="notes" placeholder="e.g. SN: NK938475"></div>
                 </div>
                 <div class="mt-4 d-flex justify-content-end gap-2">
@@ -661,7 +679,7 @@
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
           <div class="modal-header" style="background: var(--bg-header);">
-            <h5 class="modal-title fw-bold" style="color: var(--color-primary);"><i class="bi bi-pencil-square me-2"></i>Edit Equipment</h5>
+            <h5 class="modal-title fw-bold" style="color: var(--color-primary);"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Edit Equipment</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body p-4" style="background: var(--bg-card);">
@@ -669,7 +687,7 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Site Name</label>
-                        <select class="form-select" id="editSiteName" required>
+                        <select class="form-select" id="editSiteName" required aria-label="Site name">
                             <option value="AIMS CYBERJAYA">AIMS CYBERJAYA</option>
                             <option value="CX2">CX2</option>
                             <option value="CSF">CSF</option>
@@ -687,18 +705,18 @@
                         <input type="text" class="form-control" id="editRoom" list="editRoomOptions" required>
                         <datalist id="editRoomOptions"></datalist>
                     </div>
-                    <div class="col-md-4"><label class="form-label small fw-bold">Power Source</label><select class="form-select" id="editPowerSource" required><option value="AC Power">AC Power</option><option value="DC Power">DC Power</option></select></div>
+                    <div class="col-md-4"><label class="form-label small fw-bold">Power Source</label><select class="form-select" id="editPowerSource" required aria-label="Power source"><option value="AC Power">AC Power</option><option value="DC Power">DC Power</option></select></div>
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Rack ID</label>
                         <input type="text" class="form-control" id="editRackId" list="editRackOptions" required>
                         <datalist id="editRackOptions"></datalist>
                     </div>
-                    <div class="col-md-2"><label class="form-label small fw-bold">Rack Width</label><select class="form-select" id="editRackSize" required><option value="19 inch">19"</option><option value="21 inch">21"</option></select></div>
+                    <div class="col-md-2"><label class="form-label small fw-bold">Rack Width</label><select class="form-select" id="editRackSize" required aria-label="Rack width"><option value="19 inch">19"</option><option value="21 inch">21"</option></select></div>
                     <div class="col-md-2"><label class="form-label small fw-bold">Height (U)</label><input type="number" class="form-control" id="editRackHeight" required></div>
                     <div class="col-md-4"><label class="form-label small fw-bold">U-Position</label><input type="text" class="form-control" id="editUPosition" pattern="^[Uu]?[1-9][0-9]?(\s*-\s*[Uu]?[1-9][0-9]?)?$" required></div>
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Vendor</label>
-                        <select class="form-select" id="editVendor" required>
+                        <select class="form-select" id="editVendor" required aria-label="Vendor">
                             <option value="Nokia">Nokia</option><option value="Huawei">Huawei</option>
                             <option value="Ciena">Ciena</option><option value="Infinera">Infinera</option>
                             <option value="BTI">BTI</option><option value="Juniper">Juniper</option>
@@ -707,7 +725,7 @@
                             <option value="Others">Others</option>
                         </select>
                     </div>
-                    <div class="col-md-4"><label class="form-label small fw-bold">Model</label><select class="form-select" id="editModel" required></select></div>
+                    <div class="col-md-4"><label class="form-label small fw-bold">Model</label><select class="form-select" id="editModel" required aria-label="Model"></select></div>
                     <div class="col-md-4"><label class="form-label small fw-bold">Notes</label><input type="text" class="form-control" id="editNotes"></div>
                 </div>
                 <div class="mt-4 d-flex justify-content-end gap-2">
@@ -721,12 +739,30 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script defer src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script defer src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script defer src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
     <script>
+        // --- XSS GUARD: HTML-escape every spreadsheet-derived string before it is used in HTML ---
+        function esc(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        // DataTables 1.13 renders plain (non-render) columns UNESCAPED - every plain column gets escDisp
+        const escDisp = function(data, type) { return type === 'display' ? esc(data) : data; };
+
+        // Apply saved theme immediately (no library dependency, avoids dark-mode flash)
+        if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-bs-theme', 'dark');
+
+        // jQuery/Bootstrap/DataTables/Chart.js <script src> tags use `defer` (preserves their order);
+        // wait for DOMContentLoaded so the libraries are ready before this inline code runs.
+        document.addEventListener('DOMContentLoaded', function() {
         // --- MOBILE MENU LOGIC ---
         $('#mobileMenuBtn, #sidebarOverlay').on('click', function() {
             $('.app-sidebar').toggleClass('show');
@@ -784,7 +820,7 @@
         function showLoading(msg) { $('#loadingText').text(msg); $('#loadingOverlay').css('display', 'flex'); }
         function hideLoading() { $('#loadingOverlay').hide(); }
         function updateSyncStatus(status, color, icon) { 
-            $('#syncStatus').html(`<i class="bi ${icon} text-${color}"></i><span class="d-none d-md-inline ms-2">${status}</span>`); 
+            $('#syncStatus').html(`<i class="bi ${icon} text-${color}" aria-hidden="true"></i><span class="d-none d-md-inline ms-2">${esc(status)}</span>`);
         }
 
         function parseUPosition(uString) {
@@ -910,6 +946,7 @@
             updateSyncStatus('Syncing', 'warning', 'bi-arrow-repeat');
             try {
                 const response = await fetch(SCRIPT_URL);
+                if (!response.ok) throw new Error('Server returned HTTP ' + response.status);
                 const data = await response.json();
                 
                 // 1. Process OTDR Data First
@@ -974,16 +1011,16 @@
             dataTable = $('#dwdmTable').DataTable({
                 data: [], pageLength: 15, dom: 'rt<"row mt-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
                 columns: [
-                    { title: "SITE NAME" }, { title: "ROOM" }, { title: "RACK ID" },
-                    { title: "SPECS", render: function(data, type, row) { return row[3] + ' / ' + (row[9] ? row[9] + 'U' : '42U'); } }, 
-                    { title: "U-POS" }, { title: "VENDOR" }, { title: "MODEL" }, { title: "POWER" }, { title: "NOTES" },
+                    { title: "SITE NAME", render: escDisp }, { title: "ROOM", render: escDisp }, { title: "RACK ID", render: escDisp },
+                    { title: "SPECS", render: function(data, type, row) { return type === 'display' ? esc(data) + ' / ' + esc(row[9] ? row[9] + 'U' : '42U') : data; } }, 
+                    { title: "U-POS", render: escDisp }, { title: "VENDOR", render: escDisp }, { title: "MODEL", render: escDisp }, { title: "POWER", render: escDisp }, { title: "NOTES", render: escDisp },
                     { title: "ACT", orderable: false, render: function() { return '<button class="btn btn-sm text-primary btn-edit" title="Edit Record"><i class="bi bi-pencil-square"></i></button>'; } }
                 ],
                 createdRow: function(row, data) {
                     let v = data[5]; let bg = 'vendor-other';
                     if(v==='Nokia') bg='vendor-nokia'; if(v==='Huawei') bg='vendor-huawei'; if(v==='Ciena') bg='vendor-ciena'; if(v==='Infinera') bg='vendor-infinera';
                     if(v==='Raisecom') bg='vendor-raisecom'; if(v==='PDU') bg='vendor-pdu'; if(v==='Rectifier') bg='vendor-rectifier'; if(v==='Inverter') bg='vendor-inverter';
-                    $('td:eq(5)', row).html(`<span class="badge-vendor ${bg}">${v}</span>`);
+                    $('td:eq(5)', row).html(`<span class="badge-vendor ${esc(bg)}">${esc(v)}</span>`);
                 }
             });
             
@@ -1000,26 +1037,26 @@
                             if(upperName.includes('EXFO')) bg = 'vendor-exfo';
                             if(upperName.includes('YOKOGAWA')) bg = 'vendor-yokogawa';
                             if(upperName.includes('ANRITSU')) bg = 'vendor-anritsu';
-                            return `<span class="badge-vendor ${bg}">${name}</span>`;
+                            return `<span class="badge-vendor ${esc(bg)}">${esc(name)}</span>`;
                         }
                     },
                     { 
                         title: "Status", 
                         render: function(data, type, row) {
                             let badgeClass = row[1] === 'Available' ? 'bg-success' : 'bg-danger';
-                            return `<span class="badge ${badgeClass}">${row[1]}</span>`;
+                            return `<span class="badge ${esc(badgeClass)}">${esc(row[1])}</span>`;
                         }
                     },
-                    { title: "Current FE" },
-                    { title: "Site Location" }
+                    { title: "Current FE", render: escDisp },
+                    { title: "Site Location", render: escDisp }
                 ]
             });
             
             window.otdrAuditDt = $('#otdrAuditTable').DataTable({
                 data: [], pageLength: 15, order: [[0, "desc"]], dom: 'rt<"row mt-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
                 columns: [
-                    { title: "Timestamp" }, 
-                    { title: "Testgear ID" }, 
+                    { title: "Timestamp", render: escDisp }, 
+                    { title: "Testgear ID", render: escDisp }, 
                     { 
                         title: "Action",
                         render: function(data) {
@@ -1027,11 +1064,11 @@
                             if(data.includes('Check-Out')) bClass = 'bg-primary';
                             if(data.includes('Check-In')) bClass = 'bg-success';
                             if(data.includes('Transfer')) bClass = 'bg-warning text-dark';
-                            return `<span class="badge ${bClass}">${data}</span>`;
+                            return `<span class="badge ${esc(bClass)}">${esc(data)}</span>`;
                         }
                     }, 
-                    { title: "FE Name" }, 
-                    { title: "Destination / Site" }
+                    { title: "FE Name", render: escDisp }, 
+                    { title: "Destination / Site", render: escDisp }
                 ]
             });
 
@@ -1092,13 +1129,19 @@
                 bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
                 showLoading("Updating Database..."); updateSyncStatus('Syncing...', 'warning', 'bi-arrow-repeat');
                 try {
-                    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'edit', oldRow: oldRowData, newRow: newRow }), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
-                    editingDtRow.data(newRow).draw(false); 
+                    const result = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'edit', oldRow: oldRowData, newRow: newRow }), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+                    if (!result.ok) throw new Error('Server returned HTTP ' + result.status);
+                    let payload = null;
+                    try { payload = await result.json(); } catch (e) { payload = null; }
+                    if (payload && (payload.result === 'error' || payload.status === 'error' || payload.success === false || payload.error)) {
+                        throw new Error(payload.message || (typeof payload.error === 'string' && payload.error) || 'The server rejected the update.');
+                    }
+                    editingDtRow.data(newRow).draw(false);
                     let idx = localCacheData.findIndex(r => r[0]===oldRowData[0] && r[2]===oldRowData[2] && r[4]===oldRowData[4]);
                     if (idx !== -1) localCacheData[idx] = newRow;
                     updateDashboard(localCacheData); populateVisualizerSites(); if($('#visRackSelect').val() === oldRowData[2]) generateRack();
                     hideLoading(); updateSyncStatus('Live Sync', 'success', 'bi-circle-fill');
-                } catch (err) { alert("Edit failed."); hideLoading(); updateSyncStatus('Offline', 'danger', 'bi-wifi-off'); }
+                } catch (err) { alert('Edit failed: ' + err.message); hideLoading(); updateSyncStatus('Offline', 'danger', 'bi-wifi-off'); }
             });
 
             $('#dwdmForm').on('submit', async function(e) {
@@ -1111,12 +1154,18 @@
                 bootstrap.Modal.getInstance(document.getElementById('addModal')).hide();
                 showLoading("Saving..."); updateSyncStatus('Syncing...', 'warning', 'bi-arrow-repeat');
                 try {
-                    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add', row: newRow }), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+                    const result = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add', row: newRow }), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+                    if (!result.ok) throw new Error('Server returned HTTP ' + result.status);
+                    let payload = null;
+                    try { payload = await result.json(); } catch (e) { payload = null; }
+                    if (payload && (payload.result === 'error' || payload.status === 'error' || payload.success === false || payload.error)) {
+                        throw new Error(payload.message || (typeof payload.error === 'string' && payload.error) || 'The server rejected the new record.');
+                    }
                     dataTable.row.add(newRow).draw(false); localCacheData.push(newRow);
                     this.reset(); $('#model').empty().append(new Option("Select Vendor first...", ""));
                     updateDashboard(localCacheData); populateVisualizerSites();
                     hideLoading(); updateSyncStatus('Live Sync', 'success', 'bi-circle-fill');
-                } catch (err) { alert("Sync failed."); hideLoading(); updateSyncStatus('Offline', 'danger', 'bi-wifi-off'); }
+                } catch (err) { alert('Save failed: ' + err.message); hideLoading(); updateSyncStatus('Offline', 'danger', 'bi-wifi-off'); }
             });
         });
 
@@ -1156,7 +1205,7 @@
 
                 let block = document.createElement('div'); block.className = `rack-equipment vendor-${String(item[5]).toLowerCase()}`;
                 block.style.bottom = ((dStart-1)*PIXELS)+'px'; block.style.height = (dSize*PIXELS)+'px';
-                block.innerHTML = dSize===1 ? `<span>${item[5]}</span>` : `<span>${item[5]}</span><span style="font-size:9px;font-weight:normal">${item[6]}</span>`;
+                block.innerHTML = dSize===1 ? `<span>${esc(item[5])}</span>` : `<span>${esc(item[5])}</span><span style="font-size:9px;font-weight:normal">${esc(item[6])}</span>`;
                 block.title = `${item[5]} ${item[6]} | U: ${item[4]}`;
                 mount.appendChild(block);
             });
@@ -1212,11 +1261,18 @@
             if (!selectedId) { box.style.display = 'none'; return; }
 
             const item = otdrGearList.find(g => g[0] === selectedId);
+            if (!item) {
+                // Stale dropdown (list refreshed elsewhere): bail out instead of crashing on item[1]
+                box.style.display = 'none';
+                document.getElementById('otdrSubmitBtn').disabled = true;
+                return;
+            }
+            document.getElementById('otdrSubmitBtn').disabled = false;
             const isAvailable = (item[1] === 'Available');
             
             const statusClass = isAvailable ? 'status-available' : 'status-deployed';
             box.style.display = 'block';
-            box.innerHTML = `<strong>Status:</strong> <span class="${statusClass}">${item[1]}</span><br><strong>Current Holder:</strong> ${item[2]}<br><strong>Location:</strong> ${item[3]}`;
+            box.innerHTML = `<strong>Status:</strong> <span class="${esc(statusClass)}">${esc(item[1])}</span><br><strong>Current Holder:</strong> ${esc(item[2])}<br><strong>Location:</strong> ${esc(item[3])}`;
 
             for (let i = 0; i < actionSelect.options.length; i++) {
                 let opt = actionSelect.options[i];
@@ -1269,11 +1325,17 @@
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
 
             try {
-                await fetch(SCRIPT_URL, {
+                const result = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify(payload),
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }
                 });
+                if (!result.ok) throw new Error('Server returned HTTP ' + result.status);
+                let savePayload = null;
+                try { savePayload = await result.json(); } catch (e) { savePayload = null; }
+                if (savePayload && (savePayload.result === 'error' || savePayload.status === 'error' || savePayload.success === false || savePayload.error)) {
+                    throw new Error(savePayload.message || (typeof savePayload.error === 'string' && savePayload.error) || 'The server rejected the record.');
+                }
                 
                 let idx = otdrGearList.findIndex(g => g[0] === payload.gearId);
                 if(idx !== -1) {
@@ -1303,7 +1365,8 @@
                 switchTab('otdr-dashboard', $('.menu-link:contains("Live Status")'));
 
             } catch (error) {
-                alert("Saved locally! Offline queue will sync when connected.");
+                // Honest failure: nothing was saved. Form values are kept so the user can retry.
+                alert('Save failed \u2014 check your connection and try again. (' + error.message + ')');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
             }
@@ -1315,7 +1378,6 @@
             html.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
             localStorage.setItem('theme', isDark ? 'light' : 'dark');
         });
-        if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-bs-theme', 'dark');
 
         // --- PWA SERVICE WORKER REGISTRATION ---
         if ('serviceWorker' in navigator) {
@@ -1325,6 +1387,15 @@
                     .catch(err => console.error('Service Worker registration failed', err));
             });
         }
+
+        // Expose handlers referenced by inline onclick=/onchange= attributes
+        window.switchTab = switchTab;
+        window.fetchDataFromSheet = fetchDataFromSheet;
+        window.updateGearDetails = updateGearDetails;
+        window.toggleOtdrFields = toggleOtdrFields;
+        window.toggleManualSite = toggleManualSite;
+        window.submitOtdrRecord = submitOtdrRecord;
+        });
     </script>
 </body>
 </html>

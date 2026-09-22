@@ -1,0 +1,7 @@
+services:
+  racktrack:
+    build: .
+    container_name: racktrack
+    ports:
+      - "8080:80"
+    restart: unless-stopped
